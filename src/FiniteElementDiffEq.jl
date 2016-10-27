@@ -3,7 +3,7 @@ module FiniteElementDiffEq
 using DiffEqBase
 import DiffEqBase: solve
 using IterativeSolvers, Parameters, GenericSVD, ForwardDiff, NLsolve,
-      ChunkedArrays, InplaceOps, Ranges, VectorizedRoutines.Matlab, RecipesBase
+      ChunkedArrays, VectorizedRoutines.Matlab, RecipesBase
 
 import Plots: plot
 import Base: size
