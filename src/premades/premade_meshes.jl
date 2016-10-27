@@ -1,7 +1,7 @@
 
 ###Example Meshes
-pkgdir = Pkg.dir("FiniteElementDiffEq")
-meshes_location = "src/premades/premade_meshes.jld"
+pkgdir = dirname(@__FILE__)
+meshes_location = "premade_meshes.jld"
 "`meshExample_bunny()` : Returns a 3D SimpleMesh."
 meshExample_bunny() = Main.JLD.load("$pkgdir/$meshes_location","bunny")
 
