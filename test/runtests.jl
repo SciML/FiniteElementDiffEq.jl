@@ -6,7 +6,7 @@ const LONGER_TESTS = true #Requires JLD
 const TEST_CONDITIONAL_DEPS = true
 const FILEIO_ENABLE = false
 #Start Test Script
-using FiniteElementDiffEq, DiffEqDevTools
+using FiniteElementDiffEq, DiffEqDevTools, DiffEqProblemLibrary
 using Base.Test
 
 tic()
