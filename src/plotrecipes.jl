@@ -1,21 +1,3 @@
-#=
-"""
-`animate(sol::FEMSolution)`
-
-Plots an animation of the solution. Requires `save_timeseries=true` was enabled in the solver.
-"""
-function animate(sol::FEMSolution;filename="tmp.gif",fps=15,kw...)
-  atomloaded = isdefined(Main,:Atom)
-  anim = Plots.Animation()
-  for j=1:length(sol.timeseries[1])
-    plot(sol,tslocation=j;kw...)
-    Plots.frame(anim)
-    atomloaded ? Main.Atom.progress(j/length(sol.timeseries[1])) : nothing #Use Atom's progressbar if loaded
-  end
-  gif(anim,filename,fps=fps)
-end
-=#
-
 @recipe function f(sol::FEMSolution;plot_analytic=false)
   if sol.tslocation==0 #Plot solution at end
     out = Any[]
