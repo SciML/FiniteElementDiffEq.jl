@@ -30,19 +30,38 @@ type FEMSolution <: AbstractFEMSolution
   t#::AbstractArrayOrVoid
   prob::DEProblem
   save_timeseries::Bool
+  tslocation::Int # Used in the iterator for animation
   function FEMSolution(fem_mesh::FEMmesh,u,u_analytic,sol,Du,timeSeries,t,prob;save_timeseries=true)
     errors = Dict(:L2=>getL2error(fem_mesh,sol,u),:H1=>getH1error(fem_mesh,Du,u),
                   :l∞=> maximum(abs.(u-u_analytic)), :l2=> norm(u-u_analytic,2))
-    return(new(fem_mesh,u,true,u_analytic,errors,false,timeSeries,t,prob,true))
+    return(new(fem_mesh,u,true,u_analytic,errors,false,timeSeries,t,prob,true,0))
   end
   FEMSolution(fem_mesh,u,u_analytic,sol,Du,prob) = FEMSolution(fem_mesh::FEMmesh,u,u_analytic,sol,Du,[],[],prob,save_timeseries=false)
   function FEMSolution(fem_mesh::FEMmesh,u::AbstractArray,prob)
     return(FEMSolution(fem_mesh,u,[],[],prob,save_timeseries=false))
   end
   function FEMSolution(fem_mesh::FEMmesh,u::AbstractArray,timeseries,t,prob;save_timeseries=true)
-    return(new(fem_mesh,u,false,nothing,Dict{String,Float64},false,timeseries,t,prob,save_timeseries))
+    return(new(fem_mesh,u,false,nothing,Dict{String,Float64},false,timeseries,t,prob,save_timeseries,0))
   end
 end
+
+length(sol::FEMSolution) = length(sol.timeseries[1])
+
+function start(sol::FEMSolution)
+  sol.tslocation = 1
+end
+
+function next(sol::FEMSolution,state)
+  state += 1
+  sol.tslocation = state
+  (sol,state)
+end
+
+function done(sol::FEMSolution,state)
+  state >= length(sol)
+end
+
+eltype(sol::FEMSolution) = typeof(sol.timeseries[1][1])
 
 """
 `S = FEMSolutionTS(timeseries::Vector{uType},numvars::Int)``

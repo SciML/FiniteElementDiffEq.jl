@@ -5,7 +5,7 @@ module FiniteElementDiffEq
   using IterativeSolvers, Parameters, GenericSVD, ForwardDiff, NLsolve,
         ChunkedArrays, VectorizedRoutines.Matlab, RecipesBase, Plots
 
-  import Base: size
+  import Base: size, length, start, next, done, eltype
 
   macro def(name, definition)
       return quote

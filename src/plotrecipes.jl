@@ -1,3 +1,4 @@
+#=
 """
 `animate(sol::FEMSolution)`
 
@@ -13,9 +14,10 @@ function animate(sol::FEMSolution;filename="tmp.gif",fps=15,kw...)
   end
   gif(anim,filename,fps=fps)
 end
+=#
 
-@recipe function f(sol::FEMSolution;plot_analytic=false,tslocation=0)
-  if tslocation==0 #Plot solution at end
+@recipe function f(sol::FEMSolution;plot_analytic=false)
+  if sol.tslocation==0 #Plot solution at end
     out = Any[]
     for i = 1:size(sol.u,2)
       push!(out,sol.u[:,i])
@@ -28,7 +30,7 @@ end
   else #use timeseries
     out = Any[]
     for i = 1:sol.prob.numvars
-      push!(out,sol.timeseries[i][tslocation])
+      push!(out,sol.timeseries[i][sol.tslocation])
     end
   end
   seriestype --> :surface
