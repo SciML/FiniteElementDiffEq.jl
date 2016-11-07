@@ -5,9 +5,9 @@ using FiniteElementDiffEq
 
 #Define a parabolic problem
 T = 1
-Δx = 1//2^(3)
-Δt = 1//2^(7)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:neumann)
+dx = 1//2^(3)
+dt = 1//2^(7)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 prob = prob_femheat_birthdeath
 
 
@@ -21,9 +21,9 @@ sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:SemiImplicitEuler)
 println("Semi-implicit Crank Nicholson")
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:SemiImplicitCrankNicholson)
 
-Δx = 1//2^(2)
-Δt = 1//2^(4)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:neumann)
+dx = 1//2^(2)
+dt = 1//2^(4)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 println("Implicit Euler")
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:ImplicitEuler,autodiff=true)
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:ImplicitEuler,autodiff=false)
@@ -36,9 +36,9 @@ bool1 = maximum(abs.(sol.u - .777))<.01
 
 #Define a parabolic problem
 T = 1
-Δx = 1//2^(3)
-Δt = 1//2^(7)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:neumann)
+dx = 1//2^(3)
+dt = 1//2^(7)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 prob = prob_femheat_stochasticbirthdeath
 
 
@@ -59,9 +59,9 @@ sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:SemiImplicitCrankNicholson,
 =#
 
 #Define a quicker problem
-Δx = 1//2^(1)
-Δt = 1//2^(1)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:neumann)
+dx = 1//2^(1)
+dt = 1//2^(1)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 println("Implicit Euler")
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:ImplicitEuler,autodiff=true)
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:ImplicitEuler,autodiff=false)

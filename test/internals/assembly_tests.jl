@@ -2,8 +2,8 @@
 
 using FiniteElementDiffEq
 
-Δx = 1//2^(5)
-fem_mesh = notime_squaremesh([0 1 0 1],Δx,:dirichlet)
+dx = 1//2^(5)
+fem_mesh = notime_squaremesh([0 1 0 1],dx,:dirichlet)
 
 
 A,M,area = assemblematrix(fem_mesh.node,fem_mesh.elem,lumpflag=false,K=4)

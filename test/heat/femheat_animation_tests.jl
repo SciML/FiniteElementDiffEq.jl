@@ -6,9 +6,9 @@
 #Uses Plots.jl, requires matplotlib >=1.5
 using FiniteElementDiffEq, DiffEqProblemLibrary#, Plots, ImageMagick
 T = 2
-Δx = 1//2^(3)
-Δt = 1//2^(9)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:dirichlet)
+dx = 1//2^(3)
+dt = 1//2^(9)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 prob = prob_femheat_moving
 
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler,save_timeseries=true)

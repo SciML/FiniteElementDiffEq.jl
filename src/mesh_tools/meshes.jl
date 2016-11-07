@@ -21,10 +21,10 @@ can be interpreted as a mesh describing a geometry, see the mesh specification d
 * `robin`: Indices for the nodes on the boundary which have a robin boundary condition.
 * `N::Int`: The number of nodes.
 * `NT`::Int: The number of triangles (elements).
-* `Δx`: The spatial discretization size. If non-uniform, this is the average.
-* `Δt`: The time discretization size. If adaptive, this is the initial.
+* `dx`: The spatial discretization size. If non-uniform, this is the average.
+* `dt`: The time discretization size. If adaptive, this is the initial.
 * `T`::Number: The end time.
-* `numiters`::Int: The number of iterations to go from 0 to T using Δt.
+* `numiters`::Int: The number of iterations to go from 0 to T using dt.
 * `μ`: The CFL μ stability parameter.
 * `ν`: The CFL ν stability parameter.
 * `evolutionEq`: True for a mesh which has non-trivial time components.
@@ -46,14 +46,14 @@ type FEMmesh <: Mesh
   robin
   N::Int
   NT::Int
-  Δx
-  Δt
+  dx
+  dt
   T::Number
   numiters::Int
   μ
   ν
   evolutionEq
-  function FEMmesh(node,elem,Δx,Δt,T,bdtype)
+  function FEMmesh(node,elem,dx,dt,T,bdtype)
     N = size(node,1); NT = size(elem,1);
     totaledge = [elem[:,[2,3]]; elem[:,[3,1]]; elem[:,[1,2]]]
 
@@ -75,14 +75,14 @@ type FEMmesh <: Mesh
     is_bdnode[dirichlet] = true
     bdnode = find(is_bdnode)
     freenode = find(!is_bdnode)
-    if Δt != 0
-      numiters = round(Int64,T/Δt)
+    if dt != 0
+      numiters = round(Int64,T/dt)
     else
       numiters = 0
     end
-    new(node,elem,bdnode,freenode,bdedge,is_bdnode,is_bdelem,bdflag,totaledge,area,dirichlet,neumann,robin,N,NT,Δx,Δt,T,numiters,CFLμ(Δt,Δx),CFLν(Δt,Δx),T!=0)
+    new(node,elem,bdnode,freenode,bdedge,is_bdnode,is_bdelem,bdflag,totaledge,area,dirichlet,neumann,robin,N,NT,dx,dt,T,numiters,CFLμ(dt,dx),CFLν(dt,dx),T!=0)
   end
-  FEMmesh(node,elem,Δx,bdtype)=FEMmesh(node,elem,Δx,0,0,bdtype)
+  FEMmesh(node,elem,dx,bdtype)=FEMmesh(node,elem,dx,0,0,bdtype)
 end
 
 """
@@ -107,18 +107,18 @@ end
 
 
 """
-`CFLμ(Δt,Δx)``
+`CFLμ(dt,dx)``
 
-Computes the CFL-condition ``μ= Δt/(Δx*Δx)``
+Computes the CFL-condition ``μ= dt/(dx*dx)``
 """
-CFLμ(Δt,Δx)=Δt/(Δx*Δx)
+CFLμ(dt,dx)=dt/(dx*dx)
 
 """
-`CFLν(Δt,Δx)``
+`CFLν(dt,dx)``
 
-Computes the CFL-condition ``ν= Δt/Δx``
+Computes the CFL-condition ``ν= dt/dx``
 """
-CFLν(Δt,Δx)=Δt/Δx
+CFLν(dt,dx)=dt/dx
 
 """
 `fem_squaremesh(square,h)`
@@ -142,39 +142,39 @@ function fem_squaremesh(square,h)
 end
 
 """
-`notime_squaremesh(square,Δx,bdtype)`
+`notime_squaremesh(square,dx,bdtype)`
 
 Computes the (node,elem) square mesh for the square
-with the chosen `Δx` and boundary settings.
+with the chosen `dx` and boundary settings.
 
 ###Example
 
 ```julia
 square=[0 1 0 1] #Unit Square
-Δx=.25
-notime_squaremesh(square,Δx,"dirichlet")
+dx=.25
+notime_squaremesh(square,dx,"dirichlet")
 ```
 """
-function notime_squaremesh(square,Δx,bdtype)
-  node,elem = fem_squaremesh(square,Δx)
-  return(FEMmesh(node,elem,Δx,bdtype))
+function notime_squaremesh(square,dx,bdtype)
+  node,elem = fem_squaremesh(square,dx)
+  return(FEMmesh(node,elem,dx,bdtype))
 end
 
 """
-`parabolic_squaremesh(square,Δx,Δt,T,bdtype)`
+`parabolic_squaremesh(square,dx,dt,T,bdtype)`
 
 Computes the `(node,elem) x [0,T]` parabolic square mesh
-for the square with the chosen `Δx` and boundary settings
-and with the constant time intervals `Δt`.
+for the square with the chosen `dx` and boundary settings
+and with the constant time intervals `dt`.
 
 ###Example
 ```julia
 square=[0 1 0 1] #Unit Square
-Δx=.25; Δt=.25;T=2
-parabolic_squaremesh(square,Δx,Δt,T,:dirichlet)
+dx=.25; dt=.25;T=2
+parabolic_squaremesh(square,dx,dt,T,:dirichlet)
 ```
 """
-function parabolic_squaremesh(square,Δx,Δt,T,bdtype)
-  node,elem = fem_squaremesh(square,Δx)
-  return(FEMmesh(node,elem,Δx,Δt,T,bdtype))
+function parabolic_squaremesh(square,dx,dt,T,bdtype)
+  node,elem = fem_squaremesh(square,dx)
+  return(FEMmesh(node,elem,dx,dt,T,bdtype))
 end

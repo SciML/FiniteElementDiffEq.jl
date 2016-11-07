@@ -3,8 +3,8 @@
 ######
 using FiniteElementDiffEq
 
-Δx = 1//2^(1)
-fem_mesh = notime_squaremesh([0 1 0 1],Δx,:neumann)
+dx = 1//2^(1)
+fem_mesh = notime_squaremesh([0 1 0 1],dx,:neumann)
 prob = prob_poisson_birthdeathsystem
 
 sol = solve(fem_mesh::FEMmesh,prob::PoissonProblem)

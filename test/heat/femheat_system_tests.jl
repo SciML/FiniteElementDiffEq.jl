@@ -5,9 +5,9 @@ using FiniteElementDiffEq
 
 #Define a parabolic problem
 T = 5
-Δx = 1/2^(1)
-Δt = 1/2^(7)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:neumann)
+dx = 1/2^(1)
+dt = 1/2^(7)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 prob = prob_femheat_birthdeathinteractingsystem
 #@code_warntype solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)

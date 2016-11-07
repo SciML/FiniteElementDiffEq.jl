@@ -5,17 +5,17 @@ using FiniteElementDiffEq, DiffEqDevTools
 
 #Define a parabolic problem
 T = 1
-Δx = 1//2^(3)
-Δt = 1//2^(7)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:dirichlet)
+dx = 1//2^(3)
+dt = 1//2^(7)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 prob = prob_femheat_moving #also try heatProblemExample_pure() or heatProblemExample_diffuse()
 
 #Solve it with a bunch of different algorithms, plot solution
 println("Euler")
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
 
-Δt = 1//2^(4) #Make faster for tests
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:dirichlet)
+dt = 1//2^(4) #Make faster for tests
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 println("Direct")
 sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:ImplicitEuler,solver=:Direct)
 
@@ -50,9 +50,9 @@ sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:CrankNicholson,solver=:GMRE
 
 #Define another parabolic problem
 T = 1
-Δx = 1//2^(3)
-Δt = 1//2^(7)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:dirichlet)
+dx = 1//2^(3)
+dt = 1//2^(7)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 prob = prob_femheat_diffuse #also try heatProblemExample_pure() or heatProblemExample_diffuse()
 
 #Solve it with a bunch of different algorithms, plot solution
@@ -61,9 +61,9 @@ sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
 
 #Define a different parabolic problem
 T = 1//2^(5)
-Δx = 1//2^(3)
-Δt = 1//2^(9)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:dirichlet)
+dx = 1//2^(3)
+dt = 1//2^(9)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 prob = prob_femheat_pure
 
 #Solve with Euler Method
@@ -73,8 +73,8 @@ sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
 #Choose a finer mesh, solve with Euler, and add this result to the previous as
 #an approximately true solution.
 T = 1//2^(5)
-Δt = 1//2^(11)
-fem_mesh = parabolic_squaremesh([0 1 0 1],Δx,Δt,T,:dirichlet)
+dt = 1//2^(11)
+fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 sol2 = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
 appxtrue!(sol,sol2)
 TEST_PLOT && plot(sol,plot_analytic=true,cbar=false)

@@ -13,8 +13,8 @@ solves the stochastic Poisson equation ``-Δu = f + σdW``.
   the implicit equation `Ax=b`. The default is `LU`. The choices are:
 
     - `:Direct` = Solves `Ax=b` using `\\`
-    - `:CG` = Conjugate-Gradient. Best when the space is very large and ``I ± ΔtM⁻¹A`` is positive definite.
-    - `:GMRES` = GMRES. Best when the space is very large and ``I ± ΔtM⁻¹A`` is not positive definite.
+    - `:CG` = Conjugate-Gradient. Best when the space is very large and ``I ± dtM⁻¹A`` is positive definite.
+    - `:GMRES` = GMRES. Best when the space is very large and ``I ± dtM⁻¹A`` is not positive definite.
 
 * `timeseries_steps` = If `save_timeseries=true`, then this is the number of steps between the saves.
 * `autodiff` = Whether or not autodifferentiation (as provided by AutoDiff.jl) is used
@@ -27,8 +27,8 @@ function solve(fem_mesh::FEMmesh,prob::PoissonProblem;solver::Symbol=:Direct,aut
   #Assemble Matrices
   A,M,area = assemblematrix(fem_mesh,lumpflag=true)
   #Unroll some important constants
-  @unpack Δt,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
-  @unpack f,Du,f,gD,gN,analytic,knownanalytic,islinear,u₀,numvars,σ,stochastic,noisetype,D = prob
+  @unpack dt,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
+  @unpack f,Du,f,gD,gN,analytic,knownanalytic,islinear,u0,numvars,σ,stochastic,noisetype,D = prob
 
   #Setup f quadrature
   mid = Array{eltype(node)}(size(node[vec(elem[:,2]),:])...,3)
@@ -37,7 +37,7 @@ function solve(fem_mesh::FEMmesh,prob::PoissonProblem;solver::Symbol=:Direct,aut
   mid[:,:,3] = (node[vec(elem[:,1]),:]+node[vec(elem[:,2]),:])/2
 
   #Setup u
-  u = u₀(node)
+  u = u0(node)
   if numvars==0
     numvars = size(u,2)
     prob.numvars = numvars #Mutate problem to be correct.
@@ -114,7 +114,7 @@ end
 
 ## Evolution Equation Solvers
 #Note
-#rhs(u,i) = Dm[freenode,freenode]*u[freenode,:] + Δt*f(node,(i-.5)*Δt)[freenode] #Nodel interpolation 1st 𝒪
+#rhs(u,i) = Dm[freenode,freenode]*u[freenode,:] + dt*f(node,(i-.5)*dt)[freenode] #Nodel interpolation 1st 𝒪
 """
 ## Finite Element Heat Equation Solver
 
@@ -146,7 +146,7 @@ Explicit algorithms only require solving matrix multiplications `Au`. Implicit a
 require solving the linear equation `Ax=b` where `x` is the unknown. Nonlinear Solve algorithms
 require solving the nonlinear equation f(x)=0 using methods like Newton's method and is
 provided by NLSolve.jl. Explicit algorithms have the least stability and should
-be used either small Δt and non-stiff equations. The implicit algorithms have better stability,
+be used either small dt and non-stiff equations. The implicit algorithms have better stability,
 but for nonlinear equations require costly nonlinear solves in order to be solved exactly.
 The semi-implicit algorithms discretize with part of the equation implicit and another
 part explicit in order to allow for the algorithm to not require a nonlinear solve, but
@@ -156,13 +156,13 @@ at the cost of some stability (though still vastly better at stability than expl
   the implicit equation `Ax=b`. The default is `LU`. The choices are:
 
     - `:Direct` = Solves using `\\` (no factorization). Not recommended.
-    - `:Cholesky` = Cholsky decomposition. Only stable of ``I ± ΔtM⁻¹A`` is positive definite.
-      This means that this works best when Δt is small. When applicable, this is the fastest.
+    - `:Cholesky` = Cholsky decomposition. Only stable of ``I ± dtM⁻¹A`` is positive definite.
+      This means that this works best when dt is small. When applicable, this is the fastest.
     - `:LU` = LU-Decomposition. A good mix between fast and stable.
     - `:QR` = QR-Decomposition. Less numerical roundoff error than `LU`, but slightly slower.
     - `:SVD` = SVD-Decomposition. By far the slowest, but the most robust to roundoff error.
-    - `:CG` = Conjugate-Gradient. Best when the space is very large and ``I ± ΔtM⁻¹A`` is positive definite.
-    - `:GMRES` = GMRES. Best when the space is very large and ``I ± ΔtM⁻¹A`` is not positive definite.
+    - `:CG` = Conjugate-Gradient. Best when the space is very large and ``I ± dtM⁻¹A`` is positive definite.
+    - `:GMRES` = GMRES. Best when the space is very large and ``I ± dtM⁻¹A`` is not positive definite.
 
 * `save_timeseries` = Makes the algorithm save the output at every `timeseries_steps` timesteps.
   By default save_timeseries is false.
@@ -183,14 +183,14 @@ function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   A,M,area = assemblematrix(fem_mesh,lumpflag=true)
 
   #Unroll some important constants
-  @unpack Δt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
-  @unpack f,u₀,Du,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D = prob
+  @unpack dt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
+  @unpack f,u0,Du,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D = prob
 
   #Note if Atom is loaded for progress
   atomloaded = isdefined(Main,:Atom)
 
   #Set Initial
-  u = copy(u₀(node))
+  u = copy(u0(node))
   if numvars==0
     numvars = size(u,2)
     prob.numvars = numvars #Mutate problem to be correct.
@@ -219,7 +219,7 @@ function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   push!(timeseries,u)
   ts = Float64[t]
 
-  sqrtΔt= sqrt(Δt)
+  sqrtdt= sqrt(dt)
   #Setup f quadraturef
   mid = Array{eltype(node)}(size(node[vec(elem[:,2]),:])...,3)
   mid[:,:,1] = (node[vec(elem[:,2]),:]+node[vec(elem[:,3]),:])/2
@@ -239,7 +239,7 @@ function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   Minv = sparse(inv(M)) #sparse(Minv) needed until update
 
   #Heat Equation Loop
-  u,timeseres,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,Δt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtΔt,σ,noisetype,fem_mesh.numiters,save_timeseries,timeseries,ts,atomloaded,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps))
+  u,timeseres,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,fem_mesh.numiters,save_timeseries,timeseries,ts,atomloaded,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps))
 
   (atomloaded && progressbar ) ? Main.Atom.progress(1) : nothing #Use Atom's progressbar if loaded
 

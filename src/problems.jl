@@ -22,8 +22,8 @@ u_t = Δu + f + σdW_t
 * `HeatProblem(analytic,Du,f)`: Defines the dirichlet problem with solution `analytic`,
   solution gradient `Du = [u_x,u_y]`, and the forcing function `f`.
 
-* `HeatProblem(u₀,f)`: Defines the problem with initial value `u₀` (as a function) and `f`.
-  If your initial data is a vector, wrap it as `u₀(x) = vector`.
+* `HeatProblem(u0,f)`: Defines the problem with initial value `u0` (as a function) and `f`.
+  If your initial data is a vector, wrap it as `u0(x) = vector`.
 
 Note: If all functions are of `(t,x)`, then the program assumes it's linear. Write
 your functions using the math to program syntrax translation: ``x`` `= x[:,1]` and ``y`` `= x[:,2]`.
@@ -42,13 +42,13 @@ with `u_i = u[:,i]` as the ith variable. See the example problems for more help.
 * `noisetype` = A string which specifies the type of noise to be generated. By default
   `noisetype=:White` for Gaussian Spacetime White Noise.
 
-* `numvars` = Number of variables in the system. Automatically calculated from u₀ in most cases.
+* `numvars` = Number of variables in the system. Automatically calculated from u0 in most cases.
 
 * `D` = Array which defines the diffusion coefficients. Default is `D=ones(1,numvars)`.
 """
 type HeatProblem <: AbstractHeatProblem
-  "u₀: Initial value function"
-  u₀#::Function
+  "u0: Initial value function"
+  u0#::Function
   "Du: Function for the solution gradient [u_x,u_y]"
   Du::Function
   "f: Forcing function in heat equation"
@@ -71,8 +71,8 @@ type HeatProblem <: AbstractHeatProblem
   function HeatProblem(analytic,Du,f;gN=nothing,σ=nothing,noisetype=:White,numvars=nothing,D=nothing)
     islinear = numparameters(f)==2
     knownanalytic = true
-    u₀(x) = analytic(0,x)
-    numvars = size(u₀([0 0
+    u0(x) = analytic(0,x)
+    numvars = size(u0([0 0
                        0 0
                        0 0]),2)
     gD = analytic
@@ -92,9 +92,9 @@ type HeatProblem <: AbstractHeatProblem
         D = ones(1,numvars)
       end
     end
-    return(new(u₀,Du,f,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D))
+    return(new(u0,Du,f,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D))
   end
-  function HeatProblem(u₀,f;gD=nothing,gN=nothing,σ=nothing,noisetype=:White,numvars=nothing,D=nothing)
+  function HeatProblem(u0,f;gD=nothing,gN=nothing,σ=nothing,noisetype=:White,numvars=nothing,D=nothing)
     if σ==nothing
       stochastic=false
       σ=(t,x)->zeros(size(x,1))
@@ -104,8 +104,8 @@ type HeatProblem <: AbstractHeatProblem
     islinear = numparameters(f)==2
     knownanalytic = false
     if islinear
-      if u₀==nothing
-        u₀=(x)->zeros(size(x,1))
+      if u0==nothing
+        u0=(x)->zeros(size(x,1))
       end
       if gD == nothing
         gD=(t,x)->zeros(size(x,1))
@@ -119,10 +119,10 @@ type HeatProblem <: AbstractHeatProblem
       numvars = 1
     end
     if !islinear #nonlinear
-      if u₀==nothing && numvars == nothing
-        warn("u₀ and numvars must be given. numvars assumed 1.")
+      if u0==nothing && numvars == nothing
+        warn("u0 and numvars must be given. numvars assumed 1.")
         numvars = 1
-        u₀=(x)->zeros(size(x,1),numvars)
+        u0=(x)->zeros(size(x,1),numvars)
         if gD == nothing
           gD=(t,x)->zeros(size(x,1),numvars)
         end
@@ -132,8 +132,8 @@ type HeatProblem <: AbstractHeatProblem
         if D == nothing
           D = 1.0
         end
-      elseif u₀==nothing #numvars!=nothing
-        u₀=(x)->zeros(size(x,1),numvars) #Default to zero
+      elseif u0==nothing #numvars!=nothing
+        u0=(x)->zeros(size(x,1),numvars) #Default to zero
         if gD == nothing
           gD=(t,x)->zeros(size(x,1),numvars)
         end
@@ -143,11 +143,11 @@ type HeatProblem <: AbstractHeatProblem
         if D == nothing
           D = ones(1,numvars)
         end
-      elseif numvars==nothing #If u₀ is given but numvars is not, we're still okay. Generate from size in function.
+      elseif numvars==nothing #If u0 is given but numvars is not, we're still okay. Generate from size in function.
         numvars=0 #Placeholder, update gD and gN in solver
       end
     end
-    return(new(u₀,(x)->0,f,gD,gN,(x)->0,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D))
+    return(new(u0,(x)->0,f,gD,gN,(x)->0,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D))
   end
 end
 
@@ -175,8 +175,8 @@ If they keyword `σ` is given, then this wraps the data that define a 2D stochas
 `PoissonProblem(f,analytic,Du)`: Defines the dirichlet problem with analytical solution `analytic`, solution gradient `Du = [u_x,u_y]`,
 and forcing function `f`
 
-`PoissonProblem(u₀,f)`: Defines the problem with initial value `u₀` (as a function) and f.
-If your initial data is a vector, wrap it as `u₀(x) = vector`.
+`PoissonProblem(u0,f)`: Defines the problem with initial value `u0` (as a function) and f.
+If your initial data is a vector, wrap it as `u0(x) = vector`.
 
 Note: If all functions are of `(x)`, then the program assumes it's linear. Write
 your functions using the math to program syntrax translation: ``x`` `= x[:,1]` and ``y`` `= x[:,2]`.
@@ -215,13 +215,13 @@ type PoissonProblem <: AbstractPoissonProblem
   knownanalytic::Bool
   "islinear: Boolean which states whether the problem is linear or nonlinear"
   islinear::Bool
-  u₀::Function
+  u0::Function
   numvars::Int
   σ::Function
   stochastic::Bool
   noisetype::Symbol
   D#::AbstractArray
-  function PoissonProblem(f,analytic,Du;gN=nothing,σ=nothing,u₀=nothing,noisetype=:White,numvars=nothing,D=nothing)
+  function PoissonProblem(f,analytic,Du;gN=nothing,σ=nothing,u0=nothing,noisetype=:White,numvars=nothing,D=nothing)
     gD = analytic
     numvars = size(analytic([0 0
                         0 0
@@ -230,8 +230,8 @@ type PoissonProblem <: AbstractPoissonProblem
     if gN == nothing
       gN=(x)->zeros(size(x,1),numvars)
     end
-    if u₀==nothing
-      u₀=(x)->zeros(size(x,1),numvars)
+    if u0==nothing
+      u0=(x)->zeros(size(x,1),numvars)
     end
     if D == nothing
       if numvars == 1
@@ -246,9 +246,9 @@ type PoissonProblem <: AbstractPoissonProblem
     else
       stochastic=true
     end
-    return(new(f,analytic,Du,analytic,gN,true,islinear,u₀,numvars,σ,stochastic,noisetype,D))
+    return(new(f,analytic,Du,analytic,gN,true,islinear,u0,numvars,σ,stochastic,noisetype,D))
   end
-  function PoissonProblem(f;gD=nothing,gN=nothing,u₀=nothing,σ=nothing,noisetype=:White,numvars=nothing,D=nothing)
+  function PoissonProblem(f;gD=nothing,gN=nothing,u0=nothing,σ=nothing,noisetype=:White,numvars=nothing,D=nothing)
     if σ==nothing
       stochastic=false
       σ=(x)->zeros(size(x,1))
@@ -256,8 +256,8 @@ type PoissonProblem <: AbstractPoissonProblem
       stochastic = true
     end
     islinear = numparameters(f)==1
-    if islinear && u₀==nothing
-      u₀=(x)->zeros(size(x,1))
+    if islinear && u0==nothing
+      u0=(x)->zeros(size(x,1))
       if gD == nothing
         gD=(x)->zeros(size(x,1))
       end
@@ -270,10 +270,10 @@ type PoissonProblem <: AbstractPoissonProblem
       numvars = 1
     end
     if !islinear #nonlinear
-      if u₀==nothing && numvars == nothing
-        warn("u₀ and numvars must be given. numvars assumed 1.")
+      if u0==nothing && numvars == nothing
+        warn("u0 and numvars must be given. numvars assumed 1.")
         numvars = 1
-        u₀=(x)->zeros(size(x,1))
+        u0=(x)->zeros(size(x,1))
         if gD == nothing
           gD=(x)->zeros(size(x,1))
         end
@@ -283,8 +283,8 @@ type PoissonProblem <: AbstractPoissonProblem
         if D == nothing
           D = 1.0
         end
-      elseif u₀==nothing #numvars!=nothing
-        u₀=(x)->zeros(size(x,1),numvars) #Default to zero
+      elseif u0==nothing #numvars!=nothing
+        u0=(x)->zeros(size(x,1),numvars) #Default to zero
         if gD == nothing
           gD=(x)->zeros(size(x,1),numvars)
         end
@@ -294,10 +294,10 @@ type PoissonProblem <: AbstractPoissonProblem
         if D == nothing
           D = ones(1,numvars)
         end
-      elseif numvars==nothing #If u₀ is given but numvars is not, we're still okay. Generate from size in function.
+      elseif numvars==nothing #If u0 is given but numvars is not, we're still okay. Generate from size in function.
         numvars=0 #Placeholder, update gD and gN in solver
       end
     end
-    return(new(f,(x)->0,(x)->0,gD,gN,false,islinear,u₀,numvars,σ,stochastic,noisetype,D))
+    return(new(f,(x)->0,(x)->0,gD,gN,false,islinear,u0,numvars,σ,stochastic,noisetype,D))
   end
 end
