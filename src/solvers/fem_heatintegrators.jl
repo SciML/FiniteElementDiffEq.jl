@@ -27,7 +27,6 @@ immutable FEMHeatIntegrator{T1,T2,T3}
   save_timeseries::Bool
   timeseries#::Vector{uType}
   ts::AbstractArray
-  atomloaded::Bool
   solver::Symbol
   autodiff::Bool
   method::Symbol
@@ -36,6 +35,7 @@ immutable FEMHeatIntegrator{T1,T2,T3}
   timeseries_steps::Int
   progressbar::Bool
   progress_steps::Int
+  progressbar_name::String
 end
 
 @def femheat_footer begin
@@ -44,7 +44,10 @@ end
     push!(timeseries,copy(u))
     push!(ts,t)
   end
-  (atomloaded && progressbar && i%progress_steps==0) ? Main.Atom.progress(i/numiters) : nothing #Use Atom's progressbar if loaded
+  if progressbar && i%progress_steps==0
+    msg(prog,"dt="*string(dt))
+    progress(prog,i/numiters)
+  end
 end
 
 @def femheat_deterministicimplicitlinearsolve begin
@@ -115,12 +118,18 @@ end
 end
 
 @def femheat_deterministicpreamble begin
-  @unpack N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,numiters,save_timeseries,timeseries,ts,atomloaded,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps = integrator
+  @unpack N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps, progressbar_name = integrator
+  progressbar && (prog = ProgressBar(name=progressbar_name))
 end
 
 @def femheat_stochasticpreamble begin
   @unpack sqrtdt,σ,noisetype = integrator
   rands = getNoise(u,node,elem,noisetype=noisetype)
+end
+
+@def femheat_postamble begin
+  progressbar && done(prog)
+  u,timeseries,ts
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:linear,:Euler,:deterministic})
@@ -132,7 +141,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:linear,:Euler,:determinist
     t += dt
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:linear,:Euler,:stochastic})
@@ -148,7 +157,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:linear,:Euler,:stochastic}
     t += dt
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:Euler,:deterministic})
@@ -159,7 +168,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:Euler,:determin
     t += dt
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:Euler,:stochastic})
@@ -174,7 +183,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:Euler,:stochast
     t += dt
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:linear,:ImplicitEuler,:stochastic})
@@ -192,7 +201,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:linear,:ImplicitEuler,:sto
     @femheat_stochasticimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:linear,:ImplicitEuler,:deterministic})
@@ -206,7 +215,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:linear,:ImplicitEuler,:det
     @femheat_deterministicimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:linear,:CrankNicholson,:stochastic})
@@ -225,7 +234,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:linear,:CrankNicholson,:st
     @femheat_stochasticimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:linear,:CrankNicholson,:deterministic})
@@ -240,7 +249,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:linear,:CrankNicholson,:de
     @femheat_deterministicimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitEuler,:deterministic}) #Incorrect for system with different diffusions
@@ -256,7 +265,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitEul
     @femheat_deterministicimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitEuler,:stochastic}) #Incorrect for system with different diffusions
@@ -276,7 +285,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitEul
     @femheat_stochasticimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitCrankNicholson,:deterministic}) #Incorrect for system with different diffusions
@@ -293,7 +302,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitCra
     @femheat_deterministicimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitCrankNicholson,:stochastic}) #Incorrect for system with different diffusions
@@ -314,7 +323,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:SemiImplicitCra
     @femheat_stochasticimplicitlinearsolve
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:ImplicitEuler,:deterministic})
@@ -334,7 +343,7 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:ImplicitEuler,:
     @femheat_nonlinearsolvedeterministicloop
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end
 
 function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:ImplicitEuler,:stochastic})
@@ -354,5 +363,5 @@ function femheat_solve(integrator::FEMHeatIntegrator{:nonlinear,:ImplicitEuler,:
     @femheat_nonlinearsolvestochasticloop
     @femheat_footer
   end
-  u,timeseries,ts
+  @femheat_postamble
 end

@@ -178,16 +178,13 @@ at the cost of some stability (though still vastly better at stability than expl
 function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
   autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000,
-  progress_steps::Int=1000,progressbar::Bool=true)
+  progress_steps::Int=1000,progressbar::Bool=true,progressbar_name="FEM")
   #Assemble Matrices
   A,M,area = assemblematrix(fem_mesh,lumpflag=true)
 
   #Unroll some important constants
   @unpack dt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
   @unpack f,u0,Du,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D = prob
-
-  #Note if Atom is loaded for progress
-  atomloaded = isdefined(Main,:Atom)
 
   #Set Initial
   u = copy(u0(node))
@@ -238,10 +235,9 @@ function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   #Setup for Calculations
   Minv = sparse(inv(M)) #sparse(Minv) needed until update
 
-  #Heat Equation Loop
-  u,timeseres,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,fem_mesh.numiters,save_timeseries,timeseries,ts,atomloaded,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps))
 
-  (atomloaded && progressbar ) ? Main.Atom.progress(1) : nothing #Use Atom's progressbar if loaded
+  #Heat Equation Loop
+  u,timeseres,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,fem_mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
 
   if knownanalytic #True Solution exists
     if save_timeseries
