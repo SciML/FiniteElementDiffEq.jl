@@ -46,7 +46,7 @@ end
   end
   if progressbar && i%progress_steps==0
     msg(prog,"dt="*string(dt))
-    progress(prog,i/numiters)
+    Juno.progress(prog,i/numiters)
   end
 end
 
@@ -119,7 +119,7 @@ end
 
 @def femheat_deterministicpreamble begin
   @unpack N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps, progressbar_name = integrator
-  progressbar && (prog = ProgressBar(name=progressbar_name))
+  progressbar && (prog = Juno.ProgressBar(name=progressbar_name))
 end
 
 @def femheat_stochasticpreamble begin
@@ -128,7 +128,7 @@ end
 end
 
 @def femheat_postamble begin
-  progressbar && done(prog)
+  progressbar && Juno.done(prog)
   u,timeseries,ts
 end
 
