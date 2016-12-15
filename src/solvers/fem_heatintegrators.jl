@@ -45,7 +45,7 @@ end
     push!(ts,t)
   end
   if progressbar && i%progress_steps==0
-    msg(prog,"dt="*string(dt))
+    Juno.msg(prog,"dt="*string(dt))
     Juno.progress(prog,i/numiters)
   end
 end

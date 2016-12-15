@@ -178,7 +178,7 @@ at the cost of some stability (though still vastly better at stability than expl
 function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
   autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000,
-  progress_steps::Int=1000,progressbar::Bool=true,progressbar_name="FEM")
+  progress_steps::Int=1000,progressbar::Bool=false,progressbar_name="FEM")
   #Assemble Matrices
   A,M,area = assemblematrix(fem_mesh,lumpflag=true)
 
