@@ -6,15 +6,7 @@ module FiniteElementDiffEq
         ChunkedArrays, VectorizedRoutines.Matlab, RecipesBase, Juno
 
   import Base: size, length, start, next, done, eltype
-
-  macro def(name, definition)
-      return quote
-          macro $name()
-              esc($(Expr(:quote, definition)))
-          end
-      end
-  end
-
+  
   include("mesh_tools/meshes.jl")
   include("utils.jl")
   include("problems.jl")
