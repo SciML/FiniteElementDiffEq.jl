@@ -1,4 +1,4 @@
-type HeatProblem{F,F2,F3,F4,F5,F6,DiffType} <: AbstractHeatProblem
+type HeatProblem{F,F2,F3,F4,F5,F6,F7,DiffType} <: AbstractHeatProblem
   "u0: Initial value function"
   u0::F5
   "Du: Function for the solution gradient [u_x,u_y]"
@@ -10,7 +10,7 @@ type HeatProblem{F,F2,F3,F4,F5,F6,DiffType} <: AbstractHeatProblem
   "gN: neumann boundary data"
   gN::F4
   "analytic: Solution to the heat problem"
-  analytic::Function
+  analytic::F7
   "knownanalytic: Boolean which states whether the solution function is given"
   knownanalytic::Bool
   "islinear: Boolean which states whether the problem is linear or nonlinear"
