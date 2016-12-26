@@ -1,14 +1,14 @@
-type HeatProblem <: AbstractHeatProblem
+type HeatProblem{F,F2,F3,F4,F5,F6,DiffType} <: AbstractHeatProblem
   "u0: Initial value function"
-  u0#::Function
+  u0::F5
   "Du: Function for the solution gradient [u_x,u_y]"
-  Du::Function
+  Du::F2
   "f: Forcing function in heat equation"
-  f::Function
+  f::F
   "gD: dirichlet boundary data"
-  gD#::Function
+  gD::F3
   "gN: neumann boundary data"
-  gN#::Function
+  gN::F4
   "analytic: Solution to the heat problem"
   analytic::Function
   "knownanalytic: Boolean which states whether the solution function is given"
@@ -16,10 +16,10 @@ type HeatProblem <: AbstractHeatProblem
   "islinear: Boolean which states whether the problem is linear or nonlinear"
   islinear::Bool
   numvars::Int
-  σ::Function
+  σ::F6
   stochastic::Bool
   noisetype::Symbol
-  D#AbstractArray
+  D::DiffType
   function HeatProblem(analytic,Du,f;gN=nothing,σ=nothing,noisetype=:White,numvars=nothing,D=nothing)
     islinear = numparameters(f)==2
     knownanalytic = true
