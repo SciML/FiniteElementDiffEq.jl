@@ -30,60 +30,61 @@ can be interpreted as a mesh describing a geometry, see the mesh specification d
 * `evolutionEq`: True for a mesh which has non-trivial time components.
 
 """
-type FEMmesh <: Mesh
-  node
-  elem
-  bdnode
-  freenode
-  bdedge
-  is_bdnode
-  is_bdelem
-  bdflag
-  totaledge
-  area
-  dirichlet
-  neumann
-  robin
+type FEMmesh{T1,T2,xType,tType,TType} <: Mesh
+  node::T1
+  elem::Array{Int,2}
+  bdnode::Vector{Int}
+  freenode::Vector{Int}
+  bdedge::Array{Int,2}
+  is_bdnode::BitArray{1}
+  is_bdelem::BitArray{1}
+  bdflag::Array{Int8,2}
+  totaledge::Array{Int,2}
+  area::T2
+  dirichlet::Array{Int,2}
+  neumann::Array{Int,2}
+  robin::Array{Int,2}
   N::Int
   NT::Int
-  dx
-  dt
-  T::Number
+  dx::xType
+  dt::tType
+  T::TType
   numiters::Int
   μ
   ν
-  evolutionEq
-  function FEMmesh(node,elem,dx,dt,T,bdtype)
-    N = size(node,1); NT = size(elem,1);
-    totaledge = [elem[:,[2,3]]; elem[:,[3,1]]; elem[:,[1,2]]]
-
-    #Compute the area of each element
-    ve = Array{eltype(node)}(size(node[elem[:,3],:])...,3)
-    ## Compute vedge, edge as a vector, and area of each element
-    ve[:,:,1] = node[elem[:,3],:]-node[elem[:,2],:]
-    ve[:,:,2] = node[elem[:,1],:]-node[elem[:,3],:]
-    ve[:,:,3] = node[elem[:,2],:]-node[elem[:,1],:]
-    area = 0.5*abs.(-ve[:,1,3].*ve[:,2,2]+ve[:,2,3].*ve[:,1,2])
-
-    #Boundary Conditions
-    bdnode,bdedge,is_bdnode,is_bdelem = findboundary(elem)
-    bdflag = setboundary(node::AbstractArray,elem::AbstractArray,bdtype)
-    dirichlet = totaledge[vec(bdflag .== 1),:]
-    neumann = totaledge[vec(bdflag .== 2),:]
-    robin = totaledge[vec(bdflag .== 3),:]
-    is_bdnode = falses(N,1)
-    is_bdnode[dirichlet] = true
-    bdnode = find(is_bdnode)
-    freenode = find(!is_bdnode)
-    if dt != 0
-      numiters = round(Int64,T/dt)
-    else
-      numiters = 0
-    end
-    new(node,elem,bdnode,freenode,bdedge,is_bdnode,is_bdelem,bdflag,totaledge,area,dirichlet,neumann,robin,N,NT,dx,dt,T,numiters,CFLμ(dt,dx),CFLν(dt,dx),T!=0)
-  end
-  FEMmesh(node,elem,dx,bdtype)=FEMmesh(node,elem,dx,0,0,bdtype)
+  evolutionEq::Bool
 end
+
+function FEMmesh(node,elem,dx,dt,T,bdtype)
+  N = size(node,1); NT = size(elem,1);
+  totaledge = [elem[:,[2,3]]; elem[:,[3,1]]; elem[:,[1,2]]]
+
+  #Compute the area of each element
+  ve = Array{eltype(node)}(size(node[elem[:,3],:])...,3)
+  ## Compute vedge, edge as a vector, and area of each element
+  ve[:,:,1] = node[elem[:,3],:]-node[elem[:,2],:]
+  ve[:,:,2] = node[elem[:,1],:]-node[elem[:,3],:]
+  ve[:,:,3] = node[elem[:,2],:]-node[elem[:,1],:]
+  area = 0.5*abs.(-ve[:,1,3].*ve[:,2,2]+ve[:,2,3].*ve[:,1,2])
+
+  #Boundary Conditions
+  bdnode,bdedge,is_bdnode,is_bdelem = findboundary(elem)
+  bdflag = setboundary(node::AbstractArray,elem::AbstractArray,bdtype)
+  dirichlet = totaledge[vec(bdflag .== 1),:]
+  neumann = totaledge[vec(bdflag .== 2),:]
+  robin = totaledge[vec(bdflag .== 3),:]
+  is_bdnode = falses(N)
+  is_bdnode[dirichlet] = true
+  bdnode = find(is_bdnode)
+  freenode = find(!is_bdnode)
+  if dt != 0
+    numiters = round(Int64,T/dt)
+  else
+    numiters = 0
+  end
+  FEMmesh(node,elem,bdnode,freenode,bdedge,is_bdnode,is_bdelem,bdflag,totaledge,area,dirichlet,neumann,robin,N,NT,dx,dt,T,numiters,CFLμ(dt,dx),CFLν(dt,dx),T!=0)
+end
+FEMmesh(node,elem,dx,bdtype)=FEMmesh(node,elem,dx,0,0,bdtype)
 
 """
 `SimpleMesh`
@@ -97,12 +98,9 @@ Element Methods by Long Chen](http://www.math.uci.edu/~chenlong/226/Ch3FEMCode.p
 * `node`: The nodes in the (node,elem) structure.
 * `elem`: The elements in the (node,elem) structure.
 """
-type SimpleMesh <: Mesh
-  node
-  elem
-  function SimpleMesh(node,elem)
-    return(new(node,elem))
-  end
+type SimpleMesh{T} <: Mesh
+  node::T
+  elem::Array{Int,2}
 end
 
 

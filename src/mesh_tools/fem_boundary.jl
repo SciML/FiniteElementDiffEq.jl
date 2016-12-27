@@ -38,7 +38,7 @@ function findboundary(elem::AbstractArray;bdflag=[])
       i,j = ind2sub(size(edge_matrix),find(x->x==1,edge_matrix))
       bdedge = [i';j']'
       is_bdnode = falses(N)
-      is_bdnode[bdedge] = true
+      is_bdnode[vec(bdedge)] = true
       bdnode = find(is_bdnode)
   end
   is_bdelem = is_bdnode[elem[:,1]] | is_bdnode[elem[:,2]] | is_bdnode[elem[:,3]]
@@ -73,11 +73,7 @@ function setboundary(node::AbstractArray,elem::AbstractArray,bdtype)
   bdedge = [i';j']'
   bdedgeidx = zeros(Int64,size(bdedge,1))
   for i = 1:size(bdedge,1)
-    if VERSION < v"0.5-"
-      bdedgeidx[i] = find(all(totaledge .== bdedge[i,:], 2))[1] #Find the edge in totaledge and save index
-    else
-      bdedgeidx[i] = find(all(totaledge .== bdedge[i,:]', 2))[1] #Find the edge in totaledge and save index
-    end
+    bdedgeidx[i] = find(all(totaledge .== bdedge[i,:]', 2))[1] #Find the edge in totaledge and save index
   end
 
   bdflag = zeros(Int8,Neall)
@@ -110,16 +106,12 @@ end
 setboundary(fem_mesh::Mesh,bdtype) = setboundary(fem_mesh.node,fem_mesh.elem,bdtype)
 
 function findbdtype(bdstr)
-        if bdstr==:dirichlet
-            bdtype = 1
-        elseif bdstr==:neumann
-            bdtype = 2
-        elseif bdstr==:robin
-            bdtype = 3
-        #=
-      elseif bdstr==:ABC # absorbing boundary condition for wave-type equations
-            bdtype = 4
-        =#
+    if bdstr==:dirichlet
+        bdtype = 1
+    elseif bdstr==:neumann
+        bdtype = 2
+    elseif bdstr==:robin
+        bdtype = 3
     end
     return(bdtype)
 end
