@@ -101,11 +101,6 @@ function solve(prob::HeatProblem;alg::Symbol=:Euler,
   islinear ? linearity=:linear : linearity=:nonlinear
   stochastic ? stochasticity=:stochastic : stochasticity=:deterministic
 
-  testμ = prob.mesh.μ
-  if alg==:Euler && testμ >=0.5
-    warn("Euler method chosen but μ = $testμ >=.5 => Unstable. Results may be wrong.")
-  end
-
   #Setup for Calculations
   Minv = sparse(inv(M)) #sparse(Minv) needed until update
 

@@ -30,7 +30,7 @@ can be interpreted as a mesh describing a geometry, see the mesh specification d
 * `evolutionEq`: True for a mesh which has non-trivial time components.
 
 """
-type FEMmesh{T1,T2,xType,tType,TType} <: Mesh
+type FEMmesh{T1,T2,tType,TType} <: Mesh
   node::T1
   elem::Array{Int,2}
   bdnode::Vector{Int}
@@ -46,16 +46,13 @@ type FEMmesh{T1,T2,xType,tType,TType} <: Mesh
   robin::Array{Int,2}
   N::Int
   NT::Int
-  dx::xType
   dt::tType
   T::TType
   numiters::Int
-  μ
-  ν
   evolutionEq::Bool
 end
 
-function FEMmesh(node,elem,dx,dt,T,bdtype)
+function FEMmesh(node,elem,dt,T,bdtype)
   N = size(node,1); NT = size(elem,1);
   totaledge = [elem[:,[2,3]]; elem[:,[3,1]]; elem[:,[1,2]]]
 
@@ -82,9 +79,9 @@ function FEMmesh(node,elem,dx,dt,T,bdtype)
   else
     numiters = 0
   end
-  FEMmesh(node,elem,bdnode,freenode,bdedge,is_bdnode,is_bdelem,bdflag,totaledge,area,dirichlet,neumann,robin,N,NT,dx,dt,T,numiters,CFLμ(dt,dx),CFLν(dt,dx),T!=0)
+  FEMmesh(node,elem,bdnode,freenode,bdedge,is_bdnode,is_bdelem,bdflag,totaledge,area,dirichlet,neumann,robin,N,NT,dt,T,numiters,T!=0)
 end
-FEMmesh(node,elem,dx,bdtype)=FEMmesh(node,elem,dx,0,0,bdtype)
+FEMmesh(node,elem,bdtype)=FEMmesh(node,elem,0,0,bdtype)
 
 """
 `SimpleMesh`
@@ -155,7 +152,7 @@ notime_squaremesh(square,dx,"dirichlet")
 """
 function notime_squaremesh(square,dx,bdtype)
   node,elem = fem_squaremesh(square,dx)
-  return(FEMmesh(node,elem,dx,bdtype))
+  return(FEMmesh(node,elem,bdtype))
 end
 
 """
@@ -166,13 +163,15 @@ for the square with the chosen `dx` and boundary settings
 and with the constant time intervals `dt`.
 
 ###Example
+
 ```julia
 square=[0 1 0 1] #Unit Square
 dx=.25; dt=.25;T=2
 parabolic_squaremesh(square,dx,dt,T,:dirichlet)
 ```
+
 """
 function parabolic_squaremesh(square,dx,dt,T,bdtype)
   node,elem = fem_squaremesh(square,dx)
-  return(FEMmesh(node,elem,dx,dt,T,bdtype))
+  return(FEMmesh(node,elem,dt,T,bdtype))
 end
