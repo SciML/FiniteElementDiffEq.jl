@@ -1,33 +1,8 @@
-"""
-## Finite Element Poisson Equation Solver
-
-`solve(fem_mesh::FEMmesh,pdeProb::PoissonProblem)`
-
-Takes in a definition for the heat equation ``-Δu = f`` on `fem_mesh` with
-functions as defined in `pdeProb`. If `σ` is specified in `pdeProb`, then this
-solves the stochastic Poisson equation ``-Δu = f + σdW``.
-
-### Keyword Arguments
-
-* `solver` = Linear solver algorithm. This is the algorithm which is chosen for solving
-  the implicit equation `Ax=b`. The default is `LU`. The choices are:
-
-    - `:Direct` = Solves `Ax=b` using `\\`
-    - `:CG` = Conjugate-Gradient. Best when the space is very large and ``I ± dtM⁻¹A`` is positive definite.
-    - `:GMRES` = GMRES. Best when the space is very large and ``I ± dtM⁻¹A`` is not positive definite.
-
-* `timeseries_steps` = If `save_timeseries=true`, then this is the number of steps between the saves.
-* `autodiff` = Whether or not autodifferentiation (as provided by AutoDiff.jl) is used
-  for the nonlinear solving. By default autodiff is false.
-* `method` = Method the nonlinear solver uses. Defaults to `:trust_region`.
-* `show_trace` = Whether to show the output of the nonlinear solver. Defaults to false.
-* `iterations` = Maximum numer of iterations in the nonlinear solver. Defaults to 1000.
-"""
-function solve(fem_mesh::FEMmesh,prob::PoissonProblem;solver::Symbol=:Direct,autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000)
+function solve(prob::PoissonProblem;solver::Symbol=:Direct,autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000)
   #Assemble Matrices
-  A,M,area = assemblematrix(fem_mesh,lumpflag=true)
+  A,M,area = assemblematrix(prob.mesh,lumpflag=true)
   #Unroll some important constants
-  @unpack dt,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
+  @unpack dt,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = prob.mesh
   @unpack f,Du,f,gD,gN,analytic,knownanalytic,islinear,u0,numvars,σ,stochastic,noisetype,D = prob
 
   #Setup f quadrature
@@ -38,26 +13,6 @@ function solve(fem_mesh::FEMmesh,prob::PoissonProblem;solver::Symbol=:Direct,aut
 
   #Setup u
   u = u0(node)
-  if numvars==0
-    numvars = size(u,2)
-    prob.numvars = numvars #Mutate problem to be correct.
-    if gD == nothing
-      gD=(x)->zeros(size(x,1),numvars)
-    end
-    prob.gD = gD
-    if gN == nothing
-      gN=(x)->zeros(size(x,1),numvars)
-    end
-    prob.gN = gN
-    if D == nothing
-      if numvars == 1
-        D = 1.0
-      else
-        D = ones(1,numvars)
-      end
-    end
-    prob.D = D
-  end
   u[bdnode] = gD(node[bdnode,:])
 
   #Stochastic Part
@@ -106,108 +61,28 @@ function solve(fem_mesh::FEMmesh,prob::PoissonProblem;solver::Symbol=:Direct,aut
 
   #Return
   if knownanalytic # True solution exists
-    return(FEMSolution(fem_mesh,u,analytic(node),analytic,Du,prob))
+    return(FEMSolution(prob.mesh,u,analytic(node),analytic,Du,prob))
   else #No true solution
-    return(FEMSolution(fem_mesh,u,prob))
+    return(FEMSolution(prob.mesh,u,prob))
   end
 end
 
 ## Evolution Equation Solvers
 #Note
 #rhs(u,i) = Dm[freenode,freenode]*u[freenode,:] + dt*f(node,(i-.5)*dt)[freenode] #Nodel interpolation 1st 𝒪
-"""
-## Finite Element Heat Equation Solver
-
-`solve(fem_mesh::FEMmesh,pdeProb::HeatProblem)`
-
-Takes in a definition for the heat equation ``u_t = Δu + f`` on `fem_mesh` with
-functions as defined in `pdeProb`. If `σ` is specified in `pdeProb`, then this
-solves the stochastic heat equation ``u_t = Δu + f + σdW_t``.
-
-### Keyword Arguments
-
-* `alg` = Solution algorithm. Default is :Euler. The choices are:
-
-    - Linear
-
-        * `:Euler` (Explicit)
-        * `:ImplicitEuler` (Implicit)
-        * `:CrankNicholson` (Implicit)
-
-    - Nonlinear
-
-        * `:Euler` (Explicit)
-        * `:ImplicitEuler` (Nonlinear Solve)
-        * `:CrankNicholson` (Nonlinear Solve)
-        * `:SemiImplicitEuler` (Implicit)
-        * `:SemiImplicitCrankNicholson` (Implicit)
-
-Explicit algorithms only require solving matrix multiplications `Au`. Implicit algorithms
-require solving the linear equation `Ax=b` where `x` is the unknown. Nonlinear Solve algorithms
-require solving the nonlinear equation f(x)=0 using methods like Newton's method and is
-provided by NLSolve.jl. Explicit algorithms have the least stability and should
-be used either small dt and non-stiff equations. The implicit algorithms have better stability,
-but for nonlinear equations require costly nonlinear solves in order to be solved exactly.
-The semi-implicit algorithms discretize with part of the equation implicit and another
-part explicit in order to allow for the algorithm to not require a nonlinear solve, but
-at the cost of some stability (though still vastly better at stability than explicit algorithms).
-
-* `solver` = Linear solver algorithm. This is the algorithm which is chosen for solving
-  the implicit equation `Ax=b`. The default is `LU`. The choices are:
-
-    - `:Direct` = Solves using `\\` (no factorization). Not recommended.
-    - `:Cholesky` = Cholsky decomposition. Only stable of ``I ± dtM⁻¹A`` is positive definite.
-      This means that this works best when dt is small. When applicable, this is the fastest.
-    - `:LU` = LU-Decomposition. A good mix between fast and stable.
-    - `:QR` = QR-Decomposition. Less numerical roundoff error than `LU`, but slightly slower.
-    - `:SVD` = SVD-Decomposition. By far the slowest, but the most robust to roundoff error.
-    - `:CG` = Conjugate-Gradient. Best when the space is very large and ``I ± dtM⁻¹A`` is positive definite.
-    - `:GMRES` = GMRES. Best when the space is very large and ``I ± dtM⁻¹A`` is not positive definite.
-
-* `save_timeseries` = Makes the algorithm save the output at every `timeseries_steps` timesteps.
-  By default save_timeseries is false.
-* `timeseries_steps` = If `save_timeseries=true`, then this is the number of steps between the saves.
-* `autodiff` = Whether or not autodifferentiation (as provided by AutoDiff.jl) is used
-  for the nonlinear solving. By default autodiff is false.
-* `method` = Method the nonlinear solver uses. Defaults to `:trust_region`.
-* `show_trace` = Whether to show the output of the nonlinear solver. Defaults to false.
-* `iterations` = Maximum numer of iterations in the nonlinear solver. Defaults to 1000.
-* `progress_steps` = The number of steps between updates of the progress bar. Defaults to 1000.
-* `progressbar` = Turns on/off use of the Juno progress bar. Defaults to true. Requires Juno.
-"""
-function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
+function solve(prob::HeatProblem;alg::Symbol=:Euler,
   solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
   autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000,
   progress_steps::Int=1000,progressbar::Bool=false,progressbar_name="FEM")
   #Assemble Matrices
-  A,M,area = assemblematrix(fem_mesh,lumpflag=true)
+  A,M,area = assemblematrix(prob.mesh,lumpflag=true)
 
   #Unroll some important constants
-  @unpack dt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = fem_mesh
+  @unpack dt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = prob.mesh
   @unpack f,u0,Du,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D = prob
 
   #Set Initial
   u = copy(u0(node))
-  if numvars==0
-    numvars = size(u,2)
-    prob.numvars = numvars #Mutate problem to be correct.
-    if gD == nothing
-      gD=(t,x)->zeros(size(x,1),numvars)
-    end
-    prob.gD = gD
-    if gN == nothing
-      gN=(t,x)->zeros(size(x,1),numvars)
-    end
-    prob.gN = gN
-    if D == nothing
-      if numvars == 1
-        D = 1.0
-      else
-        D = ones(1,numvars)
-      end
-    end
-    prob.D = D
-  end
   t = 0
 
   #Setup timeseries
@@ -226,8 +101,7 @@ function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
   islinear ? linearity=:linear : linearity=:nonlinear
   stochastic ? stochasticity=:stochastic : stochasticity=:deterministic
 
-  testμ = fem_mesh.μ
-
+  testμ = prob.mesh.μ
   if alg==:Euler && testμ >=0.5
     warn("Euler method chosen but μ = $testμ >=.5 => Unstable. Results may be wrong.")
   end
@@ -237,21 +111,21 @@ function solve(fem_mesh::FEMmesh,prob::HeatProblem;alg::Symbol=:Euler,
 
 
   #Heat Equation Loop
-  u,timeseres,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,fem_mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
+  u,timeseres,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,prob.mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
 
   if knownanalytic #True Solution exists
     if save_timeseries
       timeseries = FEMSolutionTS(timeseries,numvars)
-      return(FEMSolution(fem_mesh,u,analytic(fem_mesh.T,node),analytic,Du,timeseries,ts,prob))
+      return(FEMSolution(prob.mesh,u,analytic(prob.mesh.T,node),analytic,Du,timeseries,ts,prob))
     else
-      return(FEMSolution(fem_mesh,u,analytic(fem_mesh.T,node),analytic,Du,prob))
+      return(FEMSolution(prob.mesh,u,analytic(prob.mesh.T,node),analytic,Du,prob))
     end
   else #No true solution
     if save_timeseries
       timeseries = FEMSolutionTS(timeseries,numvars)
-      return(FEMSolution(fem_mesh,u,timeseries,ts,prob))
+      return(FEMSolution(prob.mesh,u,timeseries,ts,prob))
     else
-      return(FEMSolution(fem_mesh,u,prob))
+      return(FEMSolution(prob.mesh,u,prob))
     end
   end
 end

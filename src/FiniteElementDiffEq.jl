@@ -1,3 +1,5 @@
+__precompile__()
+
 module FiniteElementDiffEq
 
   using DiffEqBase
@@ -6,7 +8,7 @@ module FiniteElementDiffEq
         ChunkedArrays, VectorizedRoutines.Matlab, RecipesBase, Juno
 
   import Base: size, length, start, next, done, eltype
-  
+
   include("mesh_tools/meshes.jl")
   include("utils.jl")
   include("problems.jl")

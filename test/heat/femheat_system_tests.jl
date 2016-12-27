@@ -4,18 +4,14 @@
 using FiniteElementDiffEq
 
 #Define a parabolic problem
-T = 5
-dx = 1/2^(1)
-dt = 1/2^(7)
-fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 prob = prob_femheat_birthdeathinteractingsystem
-#@code_warntype solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
-sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:Euler)
+#@code_warntype solve(prob,alg=:Euler)
+sol = solve(prob,alg=:Euler)
 
 TEST_PLOT && plot(sol,plot_analytic=false,zlim=(0,2),cbar=false)
 
 prob = prob_femheat_birthdeathsystem
-sol = solve(fem_mesh::FEMmesh,prob::HeatProblem,alg=:ImplicitEuler,iterations=1000,autodiff=true)
+sol = solve(prob,alg=:ImplicitEuler,iterations=1000,autodiff=true)
 
 TEST_PLOT && plot(sol,plot_analytic=false,zlim=(0,2),cbar=false)
 

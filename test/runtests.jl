@@ -53,8 +53,6 @@ println("Finite Element Stochastic Poisson")
 println("Finite Element Poisson")
 @time @test include("poisson/fempoisson_linear_tests.jl")
 
-println("Other Premades")
-@time @test include("internals/other_premades_tests.jl")
 println("Units Tests")
 @time @test include("internals/units_tests.jl")
 

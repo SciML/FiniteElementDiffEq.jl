@@ -7,15 +7,15 @@ dx = 1//2^(3)
 fem_mesh = notime_squaremesh([0 1 0 1],dx,:dirichlet)
 
 f = (x) -> sin.(2π.*x[:,1]).*cos.(2π.*x[:,2])
-prob = PoissonProblem(f)
+prob = PoissonProblem(f,fem_mesh)
 
-sol = solve(fem_mesh,prob)
+sol = solve(prob)
 
-sol = solve(fem_mesh,prob,solver=:CG)
+sol = solve(prob,solver=:CG)
 
-sol = solve(fem_mesh,prob,solver=:GMRES)
+sol = solve(prob,solver=:GMRES)
 
-TEST_PLOT && plot(sol::FEMSolution)
+TEST_PLOT && plot(sol)
 
 ### Test Results
 
