@@ -9,4 +9,4 @@ sol = solve(prob)#,solver=:CG) #TODO Fix CG and switch back
 
 TEST_PLOT && plot(sol,title=["True Deterministic Solution" "Stochastic Solution"],plot_analytic=true)
 #This condition should be true with really high probability
-var(sol.u) < 8e-4
+var(sol[end]) < 8e-4

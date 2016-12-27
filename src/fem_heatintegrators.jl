@@ -129,6 +129,10 @@ end
 
 @def femheat_postamble begin
   progressbar && Juno.done(prog)
+  if ts[end] != t
+    push!(timeseries,copy(u))
+    push!(ts,t)
+  end
   u,timeseries,ts
 end
 

@@ -1,6 +1,6 @@
 ##Finite Element Method Introduction
 
-using FiniteElementDiffEq, Plots
+using FiniteElementDiffEq,  DiffEqPDEBase
 
 ### Setup
 dx = 1//2^(3)

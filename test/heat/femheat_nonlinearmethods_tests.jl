@@ -1,7 +1,7 @@
 ######
 ##FEM Heat Nonlinear Test
 ######
-using FiniteElementDiffEq
+using FiniteElementDiffEq, DiffEqProblemLibrary
 
 #Define a parabolic problem
 prob = prob_femheat_birthdeath
@@ -26,7 +26,7 @@ sol = solve(prob,alg=:ImplicitEuler,autodiff=false)
 TEST_PLOT && plot(sol)
 
 #Returns true if nonlinear solver is correct
-bool1 = maximum(abs.(sol.u - .777))<.01
+bool1 = maximum(abs.(sol[end] .- .777))<.01
 
 ### Stochastic Tests
 
