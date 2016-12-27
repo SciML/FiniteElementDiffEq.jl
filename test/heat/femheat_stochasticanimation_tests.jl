@@ -10,7 +10,7 @@ prob = prob_femheat_stochasticbirthdeath
 sol = solve(prob,alg=:SemiImplicitCrankNicholson,save_timeseries=true,solver=:LU)
 
 println("Generating Animation")
-TEST_PLOT && animate(sol::FEMSolution;zlims=(0,3),cbar=false)
+#animate(sol::FEMSolution;zlims=(0,3),cbar=false)
 
 # Returns true if nothing error'd
 true

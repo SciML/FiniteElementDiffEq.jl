@@ -15,7 +15,7 @@ sol = solve(prob,solver=:CG)
 
 sol = solve(prob,solver=:GMRES)
 
-TEST_PLOT && plot(sol)
+#plot(sol)
 
 ### Test Results
 

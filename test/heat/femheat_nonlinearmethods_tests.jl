@@ -23,7 +23,7 @@ fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 println("Implicit Euler")
 sol = solve(prob,alg=:ImplicitEuler,autodiff=true)
 sol = solve(prob,alg=:ImplicitEuler,autodiff=false)
-TEST_PLOT && plot(sol)
+#plot(sol)
 
 #Returns true if nonlinear solver is correct
 bool1 = maximum(abs.(sol[end] .- .777))<.01
@@ -59,6 +59,6 @@ prob =  prob_femheat_stochasticbirthdeath_fast
 println("Implicit Euler")
 sol = solve(prob,alg=:ImplicitEuler,autodiff=true)
 sol = solve(prob,alg=:ImplicitEuler,autodiff=false)
-TEST_PLOT && plot(sol)
+#plot(sol)
 
 bool1

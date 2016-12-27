@@ -61,9 +61,9 @@ function solve(prob::PoissonProblem;solver::Symbol=:Direct,autodiff::Bool=false,
 
   #Return
   if knownanalytic # True solution exists
-    return(FEMSolution(prob.mesh,[u],analytic(node),Du,prob))
+    return(FEMSolution([u],analytic(node),Du,prob))
   else #No true solution
-    return(FEMSolution(prob.mesh,[u],prob))
+    return(FEMSolution([u],prob))
   end
 end
 
@@ -109,9 +109,9 @@ function solve(prob::HeatProblem;alg::Symbol=:Euler,
   u,timeseries,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,prob.mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
 
   if knownanalytic #True Solution exists
-    return(FEMSolution(prob.mesh,timeseries,analytic(prob.mesh.T,node),Du,ts,prob))
+    return(FEMSolution(timeseries,analytic(prob.mesh.T,node),Du,ts,prob))
   else #No true solution
-    return(FEMSolution(prob.mesh,timeseries,ts,prob))
+    return(FEMSolution(timeseries,ts,prob))
   end
 end
 

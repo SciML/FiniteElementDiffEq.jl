@@ -16,7 +16,7 @@ sim2 = test_convergence(cs;alg=alg)
 alg=:CrankNicholson; println(alg)
 sim3 = test_convergence(cs;alg=alg)
 
-TEST_PLOT && plot(plot(sim),plot(sim2),plot(sim3),layout=@layout([a b c]),size=(1200,400))
+#plot(plot(sim),plot(sim2),plot(sim3),layout=@layout([a b c]),size=(1200,400))
 
 #Returns true if all converge approximately dx^2
 minimum([sim.𝒪est[:L2],sim2.𝒪est[:L2],sim3.𝒪est[:L2]] - 2 .<.1)

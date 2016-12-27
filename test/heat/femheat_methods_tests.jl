@@ -9,7 +9,7 @@ prob = prob_femheat_moving7
 #Solve it with a bunch of different algorithms, plot solution
 println("Euler")
 sol = solve(prob,alg=:Euler)
-T=1 
+T=1
 dt = 1//2^(4) #Make faster for tests
 fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:dirichlet)
 println("Direct")
@@ -57,7 +57,7 @@ sol = solve(prob,alg=:Euler)
 #an approximately true solution.
 prob = prob_femheat_pure11
 sol2 = solve(prob,alg=:Euler)
-appxtrue!(sol,sol2)
-TEST_PLOT && plot(sol,plot_analytic=true,cbar=false)
+sol3 = appxtrue(sol,sol2)
+#plot(sol,plot_analytic=true,cbar=false)
 
-sol.errors[:l2]<.005 #Returns true if res solution is near the apprxTrue res2 solution
+sol3.errors[:l2]<.005 #Returns true if res solution is near the apprxTrue res2 solution
