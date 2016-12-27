@@ -110,14 +110,12 @@ function solve(prob::HeatProblem;alg::Symbol=:Euler,
 
   if knownanalytic #True Solution exists
     if save_timeseries
-      timeseries = FEMSolutionTS(timeseries,numvars)
       return(FEMSolution(prob.mesh,u,analytic(prob.mesh.T,node),analytic,Du,timeseries,ts,prob))
     else
       return(FEMSolution(prob.mesh,u,analytic(prob.mesh.T,node),analytic,Du,prob))
     end
   else #No true solution
     if save_timeseries
-      timeseries = FEMSolutionTS(timeseries,numvars)
       return(FEMSolution(prob.mesh,u,timeseries,ts,prob))
     else
       return(FEMSolution(prob.mesh,u,prob))

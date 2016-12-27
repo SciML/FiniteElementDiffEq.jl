@@ -4,27 +4,16 @@ const CPU_FLOPS = peakflops()
 const TEST_PLOT = false
 const LONGER_TESTS = true #Requires JLD
 const TEST_CONDITIONAL_DEPS = true
-const FILEIO_ENABLE = false
 #Start Test Script
-using FiniteElementDiffEq, DiffEqDevTools, DiffEqProblemLibrary
+using FiniteElementDiffEq, DiffEqDevTools, DiffEqProblemLibrary, DiffEqPDEBase
 using Base.Test
 
 tic()
 
 # Internals
-println("Quadrature Points Tests")
-@time @test include("internals/quadpts_test.jl")
 println("Assembly Tests")
 @time @test include("internals/assembly_tests.jl")
-println("Boundary Tests")
-FILEIO_ENABLE && @time @test include("meshes/boundary_tests.jl")
-println("Example Mesh Tests")
-FILEIO_ENABLE && @time @test include("meshes/mesh_examples_tests.jl")
-println("Simple Mesh Tests")
-@time @test include("meshes/mesh_SimpleMesh_tests.jl")
 
-
-#Finite Element
 #Heat
 println("Finite Element Heat Dt Tests")
 @time @test include("heat/femheat_dtconvergence_tests.jl")
