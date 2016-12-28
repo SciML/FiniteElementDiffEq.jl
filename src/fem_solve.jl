@@ -1,7 +1,7 @@
 function solve{islinear,isstochastic,MeshType<:FEMMesh,F1,F2,F3,F4,F5,F6,F7,DiffType}(
   prob::PoissonProblem{islinear,isstochastic,MeshType,F1,F2,F3,F4,F5,F6,F7,DiffType},
-  alg::FEMDiffEqPoisson;
-  solver::Symbol=:Direct,autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000)
+  alg::FEMDiffEqPoisson;solver::Symbol=:Direct,autodiff::Bool=false,
+  method=:trust_region,show_trace=false,iterations=1000,kwargs...)
   #Assemble Matrices
   A,M,area = assemblematrix(prob.mesh,lumpflag=true)
   #Unroll some important constants
@@ -78,7 +78,7 @@ function solve{islinear,isstochastic,MeshType<:FEMMesh,F,F2,F3,F4,F5,F6,F7,DiffT
   alg::AbstractHeatFEMAlgorithm;
   solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
   autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000,
-  progress_steps::Int=1000,progressbar::Bool=false,progressbar_name="FEM")
+  progress_steps::Int=1000,progressbar::Bool=false,progressbar_name="FEM",kwargs...)
   #Assemble Matrices
   A,M,area = assemblematrix(prob.mesh,lumpflag=true)
 
