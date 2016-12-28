@@ -14,7 +14,7 @@ function solve{islinear,isstochastic,MeshType,F1,F2,F3,F4,F5,F6,F7,DiffType}(
   mid[:,:,3] .= (view(node,vec(@view elem[:,1]),:) .+ @view node[vec(@view elem[:,2]),:])./2
 
   #Setup u
-  u = u0(node)
+  u = copy(u0)
   u[bdnode] = gD(@view node[bdnode,:])
 
   #isstochastic Part
@@ -86,7 +86,7 @@ function solve{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType}(
   @unpack f,u0,Du,gD,gN,analytic,numvars,σ,noisetype,D = prob
 
   #Set Initial
-  u = copy(u0(node))
+  u = copy(u0)
   t = zero(dt)
 
   #Setup timeseries

@@ -1,7 +1,7 @@
 ######
 ##FEM Heat dt Convergence Tests
 ######
-using FiniteElementDiffEq, DiffEqDevTools, Plots
+using FiniteElementDiffEq, DiffEqDevTools, DiffEqProblemLibrary
 #Convergences estimate has not converged in this range
 #Should decrease dx/dt for better estimate
 

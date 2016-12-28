@@ -4,10 +4,10 @@ using FiniteElementDiffEq,  DiffEqPDEBase
 
 ### Setup
 dx = 1//2^(3)
-fem_mesh = notime_squaremesh([0 1 0 1],dx,:dirichlet)
+mesh = notime_squaremesh([0 1 0 1],dx,:dirichlet)
 
 f = (x) -> sin.(2π.*x[:,1]).*cos.(2π.*x[:,2])
-prob = PoissonProblem(f,fem_mesh)
+prob = PoissonProblem(f,mesh)
 
 sol = solve(prob)
 
