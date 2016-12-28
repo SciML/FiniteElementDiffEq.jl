@@ -1,26 +1,28 @@
-function solve(prob::PoissonProblem;solver::Symbol=:Direct,autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000)
+function solve{islinear,isstochastic,MeshType,F1,F2,F3,F4,F5,F6,F7,DiffType}(
+  prob::PoissonProblem{islinear,isstochastic,MeshType,F1,F2,F3,F4,F5,F6,F7,DiffType};
+  solver::Symbol=:Direct,autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000)
   #Assemble Matrices
   A,M,area = assemblematrix(prob.mesh,lumpflag=true)
   #Unroll some important constants
   @unpack dt,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = prob.mesh
-  @unpack f,Du,f,gD,gN,analytic,knownanalytic,islinear,u0,numvars,σ,stochastic,noisetype,D = prob
+  @unpack f,Du,f,gD,gN,analytic,u0,numvars,σ,noisetype,D = prob
 
   #Setup f quadrature
-  mid = Array{eltype(node)}(size(node[vec(elem[:,2]),:])...,3)
-  mid[:,:,1] = (node[vec(elem[:,2]),:]+node[vec(elem[:,3]),:])/2
-  mid[:,:,2] = (node[vec(elem[:,3]),:]+node[vec(elem[:,1]),:])/2
-  mid[:,:,3] = (node[vec(elem[:,1]),:]+node[vec(elem[:,2]),:])/2
+  mid = Array{eltype(node)}(size(@view node[vec(@view elem[:,2]),:])...,3)
+  mid[:,:,1] .= (view(node,vec(@view elem[:,2]),:) .+ @view node[vec(@view elem[:,3]),:])./2
+  mid[:,:,2] .= (view(node,vec(@view elem[:,3]),:) .+ @view node[vec(@view elem[:,1]),:])./2
+  mid[:,:,3] .= (view(node,vec(@view elem[:,1]),:) .+ @view node[vec(@view elem[:,2]),:])./2
 
   #Setup u
   u = u0(node)
-  u[bdnode] = gD(node[bdnode,:])
+  u[bdnode] = gD(@view node[bdnode,:])
 
-  #Stochastic Part
-  if stochastic
+  #isstochastic Part
+  if isstochastic
     rands = getNoise(u,node,elem,noisetype=noisetype)
     dW = next(rands)
     rhs = (u) -> quadfbasis(f,gD,gN,A,u,node,elem,area,bdnode,mid,N,NT,dirichlet,neumann,islinear,numvars) + quadfbasis(σ,gD,gN,A,u,node,elem,area,bdnode,mid,N,NT,dirichlet,neumann,islinear,numvars).*dW
-  else #Not Stochastic
+  else #Not isstochastic
     rhs = (u) -> quadfbasis(f,gD,gN,A,u,node,elem,area,bdnode,mid,N,NT,dirichlet,neumann,islinear,numvars)
   end
   Dinv = map((x)->inv(x),D) # Special form so that units work
@@ -60,7 +62,7 @@ function solve(prob::PoissonProblem;solver::Symbol=:Direct,autodiff::Bool=false,
   end
 
   #Return
-  if knownanalytic # True solution exists
+  if typeof(analytic)!=Void # True solution exists
     return(FEMSolution([u],analytic(node),Du,prob))
   else #No true solution
     return(FEMSolution([u],prob))
@@ -70,7 +72,9 @@ end
 ## Evolution Equation Solvers
 #Note
 #rhs(u,i) = Dm[freenode,freenode]*u[freenode,:] + dt*f(node,(i-.5)*dt)[freenode] #Nodel interpolation 1st 𝒪
-function solve(prob::HeatProblem;alg::Symbol=:Euler,
+function solve{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType}(
+  prob::HeatProblem{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType};
+  alg::Symbol=:Euler,
   solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
   autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000,
   progress_steps::Int=1000,progressbar::Bool=false,progressbar_name="FEM")
@@ -79,11 +83,11 @@ function solve(prob::HeatProblem;alg::Symbol=:Euler,
 
   #Unroll some important constants
   @unpack dt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = prob.mesh
-  @unpack f,u0,Du,gD,gN,analytic,knownanalytic,islinear,numvars,σ,stochastic,noisetype,D = prob
+  @unpack f,u0,Du,gD,gN,analytic,numvars,σ,noisetype,D = prob
 
   #Set Initial
   u = copy(u0(node))
-  t = 0
+  t = zero(dt)
 
   #Setup timeseries
 
@@ -98,17 +102,14 @@ function solve(prob::HeatProblem;alg::Symbol=:Euler,
   mid[:,:,2] = (node[vec(elem[:,3]),:]+node[vec(elem[:,1]),:])/2
   mid[:,:,3] = (node[vec(elem[:,1]),:]+node[vec(elem[:,2]),:])/2
 
-  islinear ? linearity=:linear : linearity=:nonlinear
-  stochastic ? stochasticity=:stochastic : stochasticity=:deterministic
-
   #Setup for Calculations
   Minv = sparse(inv(M)) #sparse(Minv) needed until update
 
 
   #Heat Equation Loop
-  u,timeseries,ts=femheat_solve(FEMHeatIntegrator{linearity,alg,stochasticity}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,prob.mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
+  u,timeseries,ts=femheat_solve(FEMHeatIntegrator{islinear,alg,isstochastic,typeof(f),typeof(gD),typeof(gN),typeof(σ),eltype(u),typeof(u),typeof(node),typeof(area),typeof(t),typeof(D),typeof(Minv),typeof(A)}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,prob.mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
 
-  if knownanalytic #True Solution exists
+  if typeof(analytic)!=Void #True Solution exists
     return(FEMSolution(timeseries,analytic(prob.mesh.T,node),Du,ts,prob))
   else #No true solution
     return(FEMSolution(timeseries,ts,prob))
