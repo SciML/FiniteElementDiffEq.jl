@@ -7,6 +7,6 @@
 [![codecov](https://codecov.io/gh/JuliaDiffEq/FiniteElementDiffEq.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/FiniteElementDiffEq.jl)
 
 FiniteElementDiffEq.jl is a component package in the DifferentialEquations ecosystem. It holds the
-finite element method (FEM) partial differential equation solvers and utilities. While completely independent
+finite element method (FEM) partial differential equation solvers. While completely independent
 and usable on its own, users interested in using this
 functionality should check out [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl).

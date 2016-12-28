@@ -1,4 +1,4 @@
-function solve{islinear,isstochastic,MeshType,F1,F2,F3,F4,F5,F6,F7,DiffType}(
+function solve{islinear,isstochastic,MeshType<:FEMMesh,F1,F2,F3,F4,F5,F6,F7,DiffType}(
   prob::PoissonProblem{islinear,isstochastic,MeshType,F1,F2,F3,F4,F5,F6,F7,DiffType};
   solver::Symbol=:Direct,autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000)
   #Assemble Matrices
@@ -72,7 +72,7 @@ end
 ## Evolution Equation Solvers
 #Note
 #rhs(u,i) = Dm[freenode,freenode]*u[freenode,:] + dt*f(node,(i-.5)*dt)[freenode] #Nodel interpolation 1st 𝒪
-function solve{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType}(
+function solve{islinear,isstochastic,MeshType<:FEMMesh,F,F2,F3,F4,F5,F6,F7,DiffType}(
   prob::HeatProblem{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType};
   alg::Symbol=:Euler,
   solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
@@ -82,12 +82,18 @@ function solve{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType}(
   A,M,area = assemblematrix(prob.mesh,lumpflag=true)
 
   #Unroll some important constants
-  @unpack dt,T,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = prob.mesh
+  @unpack dt,tspan,bdnode,node,elem,N,NT,freenode,dirichlet,neumann = prob.mesh
   @unpack f,u0,Du,gD,gN,analytic,numvars,σ,noisetype,D = prob
+
+  if dt != 0
+    numiters = round(Int64,tspan[2]/dt)
+  else
+    numiters = 0
+  end
 
   #Set Initial
   u = copy(u0)
-  t = zero(dt)
+  t = tspan[1]
 
   #Setup timeseries
 
@@ -107,10 +113,10 @@ function solve{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType}(
 
 
   #Heat Equation Loop
-  u,timeseries,ts=femheat_solve(FEMHeatIntegrator{islinear,alg,isstochastic,typeof(f),typeof(gD),typeof(gN),typeof(σ),eltype(u),typeof(u),typeof(node),typeof(area),typeof(t),typeof(D),typeof(Minv),typeof(A)}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,prob.mesh.numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
+  u,timeseries,ts=femheat_solve(FEMHeatIntegrator{islinear,alg,isstochastic,typeof(f),typeof(gD),typeof(gN),typeof(σ),eltype(u),typeof(u),typeof(node),typeof(area),typeof(t),typeof(D),typeof(Minv),typeof(A)}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
 
   if typeof(analytic)!=Void #True Solution exists
-    return(FEMSolution(timeseries,analytic(prob.mesh.T,node),Du,ts,prob))
+    return(FEMSolution(timeseries,analytic(tspan[2],node),Du,ts,prob))
   else #No true solution
     return(FEMSolution(timeseries,ts,prob))
   end
