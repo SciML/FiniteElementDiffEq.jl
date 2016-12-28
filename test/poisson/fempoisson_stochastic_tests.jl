@@ -5,7 +5,7 @@ using FiniteElementDiffEq
 
 prob = prob_poisson_noisywave
 
-sol = solve(prob)#,solver=:CG) #TODO Fix CG and switch back
+sol = solve(prob,FEMDiffEqPoisson())
 
 #plot(sol,title=["True Deterministic Solution" "Stochastic Solution"],plot_analytic=true)
 #This condition should be true with really high probability

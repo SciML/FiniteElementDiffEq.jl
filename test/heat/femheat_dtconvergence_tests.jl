@@ -6,15 +6,15 @@ using FiniteElementDiffEq, DiffEqDevTools, DiffEqProblemLibrary
 #Should decrease dx/dt for better estimate
 
 cs = cs_femheat_moving_dt
-alg=:Euler; println(alg) #Unstable due to μ
-sim = test_convergence(cs;alg=alg)
+alg=FEMDiffEqHeatEuler(); println(alg) #Unstable due to μ
+sim = test_convergence(cs,alg)
 
-alg=:ImplicitEuler; println(alg)
-sim2 = test_convergence(cs;alg=alg)
+alg=FEMDiffEqHeatImplicitEuler(); println(alg)
+sim2 = test_convergence(cs,alg)
 
-alg=:CrankNicholson; println(alg) #Bound by spatial discretization error at low dt, decrease dx for full convergence
+alg=FEMDiffEqHeatCrankNicholson(); println(alg) #Bound by spatial discretization error at low dt, decrease dx for full convergence
 cs = cs_femheat_moving_faster_dt
-sim3 = test_convergence(cs;alg=alg)
+sim3 = test_convergence(cs,alg)
 
 #plot(plot(sim),plot(sim2),plot(sim3),layout=@layout([a b c]),size=(1200,400))
 #Note: Stabilizes in H1 due to high dx-error, reduce dx and it converges further.

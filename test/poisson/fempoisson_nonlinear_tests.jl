@@ -5,7 +5,7 @@ using FiniteElementDiffEq
 
 prob = prob_poisson_birthdeath
 
-sol = solve(prob)
+sol = solve(prob,FEMDiffEqPoisson())
 
 #plot(sol,plot_analytic=false,zlim=(0,2))
 

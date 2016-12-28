@@ -6,7 +6,7 @@ using FiniteElementDiffEq
 
 prob = prob_poisson_birthdeathsystem
 
-sol = solve(prob)
+sol = solve(prob,FEMDiffEqPoisson())
 
 #plot(sol,plot_analytic=false,zlim=(0,2))
 
@@ -17,7 +17,7 @@ bool1 = maximum(abs.(sol[end] .- [2 1]))< 1e-8
 
 prob = prob_poisson_birthdeathinteractingsystem
 
-sol = solve(prob)
+sol = solve(prob,FEMDiffEqPoisson())
 
 #plot(sol,plot_analytic=false,zlim=(0,2),cbar=false)
 

@@ -5,7 +5,7 @@ using FiniteElementDiffEq, DiffEqDevTools,DiffEqProblemLibrary
 
 cs = cs_fempoisson_wave
 
-sim = test_convergence(cs)
+sim = test_convergence(cs,FEMDiffEqPoisson())
 
 #Plot Result
 #plot(sim,xguide="Delta x")

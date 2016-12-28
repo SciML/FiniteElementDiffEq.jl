@@ -6,12 +6,12 @@ using FiniteElementDiffEq
 #Define a parabolic problem
 prob = prob_femheat_birthdeathinteractingsystem
 #@code_warntype solve(prob,alg=:Euler)
-sol = solve(prob,alg=:Euler)
+sol = solve(prob,FEMDiffEqHeatEuler())
 
 #plot(sol,plot_analytic=false,zlim=(0,2),cbar=false)
 
 prob = prob_femheat_birthdeathsystem
-sol = solve(prob,alg=:ImplicitEuler,iterations=1000,autodiff=true)
+sol = solve(prob,FEMDiffEqHeatImplicitEuler(),iterations=1000,autodiff=true)
 
 #plot(sol,plot_analytic=false,zlim=(0,2),cbar=false)
 

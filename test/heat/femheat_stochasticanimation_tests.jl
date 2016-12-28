@@ -7,7 +7,7 @@
 using FiniteElementDiffEq, Plots#, ImageMagick
 prob = prob_femheat_stochasticbirthdeath
 
-sol = solve(prob,alg=:SemiImplicitCrankNicholson,save_timeseries=true,solver=:LU)
+sol = solve(prob,FEMDiffEqHeatSemiImplicitCrankNicholson(),save_timeseries=true,solver=:LU)
 
 println("Generating Animation")
 #animate(sol::FEMSolution;zlims=(0,3),cbar=false)

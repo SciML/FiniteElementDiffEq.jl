@@ -9,11 +9,11 @@ mesh = notime_squaremesh([0 1 0 1],dx,:dirichlet)
 f = (x) -> sin.(2π.*x[:,1]).*cos.(2π.*x[:,2])
 prob = PoissonProblem(f,mesh)
 
-sol = solve(prob)
+sol = solve(prob,FEMDiffEqPoisson())
 
-sol = solve(prob,solver=:CG)
+sol = solve(prob,FEMDiffEqPoisson(),solver=:CG)
 
-sol = solve(prob,solver=:GMRES)
+sol = solve(prob,FEMDiffEqPoisson(),solver=:GMRES)
 
 #plot(sol)
 

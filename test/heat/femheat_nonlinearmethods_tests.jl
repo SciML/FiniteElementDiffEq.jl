@@ -9,20 +9,20 @@ prob = prob_femheat_birthdeath
 
 #Solve it with a bunch of different algorithms, plot solution
 println("Euler")
-sol = solve(prob,alg=:Euler)
+sol = solve(prob,FEMDiffEqHeatEuler())
 
 println("Semi-implicit Euler")
-sol = solve(prob,alg=:SemiImplicitEuler)
+sol = solve(prob,FEMDiffEqHeatSemiImplicitEuler())
 
 println("Semi-implicit Crank Nicholson")
-sol = solve(prob,alg=:SemiImplicitCrankNicholson)
+sol = solve(prob,FEMDiffEqHeatSemiImplicitCrankNicholson())
 
 dx = 1//2^(2)
 dt = 1//2^(4)
 fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 println("Implicit Euler")
-sol = solve(prob,alg=:ImplicitEuler,autodiff=true)
-sol = solve(prob,alg=:ImplicitEuler,autodiff=false)
+sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=true)
+sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=false)
 #plot(sol)
 
 #Returns true if nonlinear solver is correct
@@ -40,10 +40,10 @@ prob = prob_femheat_stochasticbirthdeath
 
 #Solve it with a bunch of different algorithms, plot solution
 println("Euler")
-sol = solve(prob,alg=:Euler)
+sol = solve(prob,FEMDiffEqHeatEuler())
 
 println("Semi-implicit Euler")
-sol = solve(prob,alg=:SemiImplicitEuler)
+sol = solve(prob,FEMDiffEqHeatSemiImplicitEuler())
 
 #=
 # CG and GMRES require size 1 vector, breaks with numvars change
@@ -57,8 +57,8 @@ sol = solve(prob,alg=:SemiImplicitCrankNicholson,solver=:GMRES)
 #Define a quicker problem
 prob =  prob_femheat_stochasticbirthdeath_fast
 println("Implicit Euler")
-sol = solve(prob,alg=:ImplicitEuler,autodiff=true)
-sol = solve(prob,alg=:ImplicitEuler,autodiff=false)
+sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=true)
+sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=false)
 #plot(sol)
 
 bool1

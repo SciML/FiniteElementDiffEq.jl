@@ -6,7 +6,7 @@ immutable FEMHeatIntegrator{T1,T2,T3,F1,F2,F3,F4,uElType,uType,nodeType,AType,tT
   Minv::MinvType
   D::DiffType
   A::Array{uElType,2}
-  freenode#::Vector{Int}
+  freenode::Vector{Int}
   f::F1
   gD::F2
   gN::F3
@@ -14,7 +14,7 @@ immutable FEMHeatIntegrator{T1,T2,T3,F1,F2,F3,F4,uElType,uType,nodeType,AType,tT
   node::nodeType
   elem::Array{Int,2}
   area::AType
-  bdnode#::Vector{Int}
+  bdnode::Vector{Int}
   mid::Array{uElType,3}
   dirichlet::Array{Int,2}
   neumann::Array{Int,2}
@@ -25,7 +25,7 @@ immutable FEMHeatIntegrator{T1,T2,T3,F1,F2,F3,F4,uElType,uType,nodeType,AType,tT
   noisetype::Symbol
   numiters::Int
   save_timeseries::Bool
-  timeseries#::Vector{uType}
+  timeseries::Vector{uType}
   ts::Vector{tType}
   solver::Symbol
   autodiff::Bool
@@ -136,7 +136,7 @@ end
   u,timeseries,ts
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,:Euler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,FEMDiffEqHeatEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   K = eye(N) - dt*Minv*D*A #D okay since numVar = 1 for linear
   @inbounds for i=1:numiters
@@ -148,7 +148,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,:Euler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,FEMDiffEqHeatEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   K = eye(N) - dt*Minv*D*A #D okay since numVar = 1 for linear
@@ -164,7 +164,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:Euler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   @inbounds for i=1:numiters
     u[freenode,:] = u[freenode,:] - D.*(dt*Minv[freenode,freenode]*A[freenode,freenode]*u[freenode,:]) + (Minv*dt*quadfbasis((x,u)->f(t,x,u),(x)->gD(t,x),(x)->gN(t,x),
@@ -175,7 +175,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:Euler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   @inbounds for i=1:numiters
@@ -190,7 +190,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,:ImplicitEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,FEMDiffEqHeatImplicitEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   K = eye(N) + dt*Minv*D*A #D okay since numVar = 1 for linear
@@ -208,7 +208,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,:ImplicitEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,FEMDiffEqHeatImplicitEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   K = eye(N) + dt*Minv*D*A #D okay since numVar = 1 for linear
   lhs = K[freenode,freenode]
@@ -222,7 +222,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,:CrankNicholson,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,FEMDiffEqHeatCrankNicholson,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   Km = eye(N) - dt*Minv*D*A/2 #D okay since numVar = 1 for linear
@@ -241,7 +241,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,:CrankNicholson,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{true,FEMDiffEqHeatCrankNicholson,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   Km = eye(N) - dt*Minv*D*A/2 #D okay since numVar = 1 for linear
   Kp = eye(N) + dt*Minv*D*A/2 #D okay since numVar = 1 for linear
@@ -256,7 +256,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:SemiImplicitEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatSemiImplicitEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
   @femheat_deterministicpreamble
   Dinv = D.^(-1)
   K = eye(N) + dt*Minv*A
@@ -272,7 +272,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:SemiImplicitEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatSemiImplicitEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   Dinv = D.^(-1)
@@ -292,7 +292,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:SemiImplicitCrankNicholson,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatSemiImplicitCrankNicholson,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
   @femheat_deterministicpreamble
   Dinv = D.^(-1)
   Km = eye(N) - dt*Minv*A/2
@@ -309,7 +309,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:SemiImplicitCrankNicholson,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatSemiImplicitCrankNicholson,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}) #Incorrect for system with different diffusions
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   Dinv = D.^(-1)
@@ -330,7 +330,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:ImplicitEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatImplicitEuler,false,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   function rhs!(i,u,resid,uOld)
     u = reshape(u,N,numvars)
@@ -350,7 +350,7 @@ function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,M
   @femheat_postamble
 end
 
-function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,:ImplicitEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
+function femheat_solve{F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType}(integrator::FEMHeatIntegrator{false,FEMDiffEqHeatImplicitEuler,true,F1,F2,F3,F4,uElType,uType,nodeType,AType,tType,DiffType,MinvType,StiffType})
   @femheat_deterministicpreamble
   @femheat_stochasticpreamble
   function rhs!(i,u,resid,dW,uOld)
