@@ -4,7 +4,7 @@
 
 #Generates an animation for a solution of the heat equation
 #Uses Plots.jl, requires matplotlib >=1.5
-using FiniteElementDiffEq, Plots#, ImageMagick
+using FiniteElementDiffEq#, ImageMagick
 prob = prob_femheat_stochasticbirthdeath
 
 sol = solve(prob,FEMDiffEqHeatSemiImplicitCrankNicholson(),save_timeseries=true,solver=:LU)

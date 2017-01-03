@@ -1,7 +1,7 @@
 ######
 ##FEM Heat dx Convergence Tests
 ######
-using FiniteElementDiffEq, DiffEqDevTools,Plots
+using FiniteElementDiffEq, DiffEqDevTools
 
 #Travis CI Test Setting
 #Not good plots, but quick for unit tests
