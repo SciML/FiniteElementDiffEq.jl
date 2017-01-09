@@ -23,8 +23,8 @@ T = 1
 fem_mesh = parabolic_squaremesh([0 1 0 1],dx,dt,T,:neumann)
 println("Implicit Euler")
 sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=true)
-println("Implicit Euler Autodiff False")
-sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=false)
+#println("Implicit Euler Autodiff False")
+#sol = solve(prob,FEMDiffEqHeatImplicitEuler(),autodiff=false)
 #plot(sol)
 
 #Returns true if nonlinear solver is correct
