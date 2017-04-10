@@ -76,7 +76,7 @@ end
 function solve{islinear,isstochastic,MeshType<:FEMMesh,F,F2,F3,F4,F5,F6,F7,DiffType}(
   prob::HeatProblem{islinear,isstochastic,MeshType,F,F2,F3,F4,F5,F6,F7,DiffType},
   alg::AbstractHeatFEMAlgorithm;
-  solver::Symbol=:LU,save_timeseries::Bool = false,timeseries_steps::Int = 100,
+  solver::Symbol=:LU,save_everystep::Bool = false,timeseries_steps::Int = 100,
   autodiff::Bool=false,method=:trust_region,show_trace=false,iterations=1000,
   progress_steps::Int=1000,progressbar::Bool=false,progressbar_name="FEM",kwargs...)
   #Assemble Matrices
@@ -113,7 +113,7 @@ function solve{islinear,isstochastic,MeshType<:FEMMesh,F,F2,F3,F4,F5,F6,F7,DiffT
   Minv = sparse(inv(M)) #sparse(Minv) needed until update
 
   #Heat Equation Loop
-  u,timeseries,ts=femheat_solve(FEMHeatIntegrator{islinear,typeof(alg),isstochastic,typeof(f),typeof(gD),typeof(gN),typeof(σ),eltype(u),typeof(u),typeof(node),typeof(area),typeof(t),typeof(D),typeof(Minv),typeof(A)}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
+  u,timeseries,ts=femheat_solve(FEMHeatIntegrator{islinear,typeof(alg),isstochastic,typeof(f),typeof(gD),typeof(gN),typeof(σ),eltype(u),typeof(u),typeof(node),typeof(area),typeof(t),typeof(D),typeof(Minv),typeof(A)}(N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,sqrtdt,σ,noisetype,numiters,save_everystep,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps,progressbar_name))
 
   if typeof(analytic)!=Void #True Solution exists
     return(FEMSolution(timeseries,analytic(tspan[2],node),Du,ts,prob))

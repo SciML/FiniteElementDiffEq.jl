@@ -24,7 +24,7 @@ immutable FEMHeatIntegrator{T1,T2,T3,F1,F2,F3,F4,uElType,uType,nodeType,AType,tT
   σ::F4
   noisetype::Symbol
   numiters::Int
-  save_timeseries::Bool
+  save_everystep::Bool
   timeseries::Vector{uType}
   ts::Vector{tType}
   solver::Symbol
@@ -40,7 +40,7 @@ end
 
 @def femheat_footer begin
   u[bdnode] = gD(i*dt,node)[bdnode]
-  if save_timeseries && i%timeseries_steps==0
+  if save_everystep && i%timeseries_steps==0
     push!(timeseries,copy(u))
     push!(ts,t)
   end
@@ -118,7 +118,7 @@ end
 end
 
 @def femheat_deterministicpreamble begin
-  @unpack N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,numiters,save_timeseries,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps, progressbar_name = integrator
+  @unpack N,NT,dt,t,Minv,D,A,freenode,f,gD,gN,u,node,elem,area,bdnode,mid,dirichlet,neumann,islinear,numvars,numiters,save_everystep,timeseries,ts,solver,autodiff,method,show_trace,iterations,timeseries_steps,progressbar,progress_steps, progressbar_name = integrator
   progressbar && (prog = Juno.ProgressBar(name=progressbar_name))
 end
 
