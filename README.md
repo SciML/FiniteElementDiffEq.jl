@@ -6,6 +6,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/JuliaDiffEq/FiniteElementDiffEq.jl/badge.svg)](https://coveralls.io/github/JuliaDiffEq/FiniteElementDiffEq.jl)
 [![codecov](https://codecov.io/gh/JuliaDiffEq/FiniteElementDiffEq.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaDiffEq/FiniteElementDiffEq.jl)
 
+[![FiniteElementDiffEq](http://pkg.julialang.org/badges/FiniteElementDiffEq_0.5.svg)](http://pkg.julialang.org/?pkg=FiniteElementDiffEq)
+[![FiniteElementDiffEq](http://pkg.julialang.org/badges/FiniteElementDiffEq_0.6.svg)](http://pkg.julialang.org/?pkg=FiniteElementDiffEq)
+
 FiniteElementDiffEq.jl is a component package in the DifferentialEquations ecosystem. It holds the
 finite element method (FEM) partial differential equation solvers. While completely independent
 and usable on its own, users interested in using this
