@@ -4,7 +4,7 @@ module FiniteElementDiffEq
 
   using DiffEqBase, DiffEqPDEBase
   import DiffEqBase: solve
-  using IterativeSolvers, GenericSVD, ForwardDiff, NLsolve, Parameters,
+  using IterativeSolvers, GenericSVD, NLsolve, Parameters,
         ChunkedArrays, Juno, VectorizedRoutines.Matlab
 
   include("algorithms.jl")
