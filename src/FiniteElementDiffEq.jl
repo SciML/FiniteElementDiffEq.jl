@@ -2,7 +2,9 @@ __precompile__()
 
 module FiniteElementDiffEq
 
-  using DiffEqBase, DiffEqPDEBase
+  using Reexport
+  @reexport using DiffEqBase
+  @reexport using DiffEqPDEBase
   import DiffEqBase: solve
   using IterativeSolvers, GenericSVD, NLsolve, Parameters,
         ChunkedArrays, Juno, VectorizedRoutines.Matlab
