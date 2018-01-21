@@ -9,6 +9,8 @@
 [![FiniteElementDiffEq](http://pkg.julialang.org/badges/FiniteElementDiffEq_0.5.svg)](http://pkg.julialang.org/?pkg=FiniteElementDiffEq)
 [![FiniteElementDiffEq](http://pkg.julialang.org/badges/FiniteElementDiffEq_0.6.svg)](http://pkg.julialang.org/?pkg=FiniteElementDiffEq)
 
+This library is deprecated.
+
 FiniteElementDiffEq.jl is a component package in the DifferentialEquations ecosystem. It holds the
 finite element method (FEM) partial differential equation solvers. While completely independent
 and usable on its own, users interested in using this
