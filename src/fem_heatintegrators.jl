@@ -96,7 +96,7 @@ end
   u = vec(u)
   uOld = copy(u)
   dW = next(rands)
-  nlres = NLsolve.nlsolve((u,resid)->rhs!(i,u,resid,dW,uOld),uOld,autodiff=autodiff,method=method,show_trace=show_trace,iterations=iterations)
+  nlres = NLsolve.nlsolve((resid,u)->rhs!(i,u,resid,dW,uOld),uOld,autodiff=autodiff,method=method,show_trace=show_trace,iterations=iterations)
   u = nlres.zero
   if numvars > 1
     u = reshape(u,N,numvars)
@@ -106,7 +106,7 @@ end
 @def femheat_nonlinearsolvedeterministicloop begin
   u = vec(u)
   uOld = copy(u)
-  nlres = NLsolve.nlsolve((u,resid)->rhs!(i,u,resid,uOld),uOld,autodiff=autodiff,method=method,show_trace=show_trace,iterations=iterations)
+  nlres = NLsolve.nlsolve((resid,u)->rhs!(i,u,resid,uOld),uOld,autodiff=autodiff,method=method,show_trace=show_trace,iterations=iterations)
   u = nlres.zero
   if numvars > 1
     u = reshape(u,N,numvars)

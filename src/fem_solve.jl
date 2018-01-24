@@ -47,7 +47,7 @@ function solve{islinear,isstochastic,MeshType<:FEMMesh,F1,F2,F3,F4,F5,F6,F7,Diff
       u = u - uc   # Impose integral of u = 0
     end
   else #Nonlinear
-    rhs! = (u,resid) -> begin
+    rhs! = (resid,u) -> begin
       u = reshape(u,N,numvars)
       resid = reshape(resid,N,numvars)
       resid[freenode,:]=D.*(A[freenode,freenode]*u[freenode,:])-rhs(u)[freenode,:]
